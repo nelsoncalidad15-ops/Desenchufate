@@ -6,6 +6,7 @@ import {
   ZapOff,
 } from 'lucide-react';
 import { EmpresaCalculada, AreaCalculada } from '../types';
+import { getBrandTheme } from '../utils/brandTheme';
 
 interface CompanyGridProps {
   empresas: EmpresaCalculada[];
@@ -56,13 +57,14 @@ export const CompanyGrid: React.FC<CompanyGridProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {empresas.map((emp, idx) => {
           const scoreBadgeClass = getCompanyScoreBadge(emp.puntaje);
+          const theme = getBrandTheme(emp.nombre);
           return (
             <motion.div
               key={emp.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.15, delay: idx * 0.03 }}
-              className="group rounded-2xl bg-white border border-slate-200/90 p-4 hover:border-slate-400 hover:shadow-xs transition-all duration-200 shadow-2xs flex flex-col justify-between space-y-3"
+              className="group rounded-2xl border bg-white p-4 hover:shadow-xs transition-all duration-200 shadow-2xs flex flex-col justify-between space-y-3" style={{ borderColor: theme.border, borderTopWidth: '4px' }}
             >
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
@@ -72,7 +74,7 @@ export const CompanyGrid: React.FC<CompanyGridProps> = ({
                     </span>
                     <h4
                       onClick={() => onSelectCompany(emp.id)}
-                      className="text-base font-bold text-slate-900 hover:text-emerald-700 cursor-pointer transition-colors"
+                      className="text-base font-bold cursor-pointer transition-colors" style={{ color: theme.ink }}
                     >
                       {emp.nombre}
                     </h4>
@@ -82,7 +84,7 @@ export const CompanyGrid: React.FC<CompanyGridProps> = ({
                     <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                       #{emp.posicion}
                     </span>
-                    <span className={`px-2 py-0.5 rounded text-xs font-mono ${scoreBadgeClass}`}>
+                    <span className={`px-2 py-0.5 rounded text-xs font-mono ${scoreBadgeClass}`} style={{ backgroundColor: theme.accent }}>
                       {emp.puntaje.toFixed(1)}
                     </span>
                   </div>

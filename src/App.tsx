@@ -11,7 +11,6 @@ import {
   getDefaultDashboardSourceData,
   loadDashboardSourceData,
   type DashboardSourceData,
-  type DataSourceStatus,
 } from './services/sourceDataService';
 
 import {
@@ -19,10 +18,7 @@ import {
   Layers,
   BarChart3,
   FileSpreadsheet,
-  CheckCircle2,
-  CircleOff,
   FileText,
-  LoaderCircle,
   Table as TableIcon,
   LayoutGrid,
 } from 'lucide-react';
@@ -54,16 +50,8 @@ const DEFAULT_FILTERS: FiltrosState = {
   busqueda: '',
 };
 
-const DEFAULT_SOURCE_STATUS: DataSourceStatus = {
-  mode: 'mock',
-  label: 'Modo local',
-  detail: 'Usando datos de ejemplo para trabajar sin depender de Google Sheets.',
-};
-
 export default function App() {
   const [sourceData, setSourceData] = useState<DashboardSourceData>(() => getDefaultDashboardSourceData());
-  const [sourceStatus, setSourceStatus] = useState<DataSourceStatus>(DEFAULT_SOURCE_STATUS);
-  const [loadingData, setLoadingData] = useState(true);
 
   const [config, setConfig] = useState<ConfigSheet>(sourceData.config);
   const [filtros, setFiltros] = useState<FiltrosState>(DEFAULT_FILTERS);
@@ -88,7 +76,6 @@ export default function App() {
 
       setSourceData(result.sourceData);
       setConfig(result.sourceData.config);
-      setSourceStatus(result.sourceStatus);
       setLastUpdate(
         result.sourceStatus.lastUpdate
           ? new Date(result.sourceStatus.lastUpdate).toLocaleTimeString('es-AR', {
@@ -102,7 +89,6 @@ export default function App() {
               second: '2-digit',
             })
       );
-      setLoadingData(false);
       setIsRefreshing(false);
     };
 
@@ -129,7 +115,6 @@ export default function App() {
     const result = await loadDashboardSourceData();
     setSourceData(result.sourceData);
     setConfig(result.sourceData.config);
-    setSourceStatus(result.sourceStatus);
     setLastUpdate(
       result.sourceStatus.lastUpdate
         ? new Date(result.sourceStatus.lastUpdate).toLocaleTimeString('es-AR', {
@@ -170,9 +155,9 @@ export default function App() {
   const handleSelectArea = (area: AreaCalculada) => {
     setFiltros((prev) => ({
       ...prev,
-      empresa: area.empresaNombre || 'Todas',
+      empresa: area.idEmpresa || 'Todas',
       sede: area.sede || 'Todas',
-      area: area.areaNombre || 'Todas',
+      area: area.id || 'Todas',
     }));
     setActiveTab('bitacora');
     setShowFilterBar(true);
@@ -196,36 +181,6 @@ export default function App() {
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
-        <section className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
-                {loadingData ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin text-slate-500" />
-                ) : sourceStatus.mode === 'live' ? (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                ) : (
-                  <CircleOff className="h-4 w-4 text-amber-600" />
-                )}
-                <span>{loadingData ? 'Cargando datos...' : sourceStatus.label}</span>
-              </div>
-              <p className="text-sm text-slate-600">{sourceStatus.detail}</p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-              <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700 border border-slate-200">
-                {sourceData.registros.length} auditorías cargadas
-              </span>
-              <button
-                onClick={() => setShowGuideModal(true)}
-                className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors cursor-pointer"
-              >
-                <FileText className="h-3.5 w-3.5" />
-                Ver guía de GitHub, Netlify y Sheets
-              </button>
-            </div>
-          </div>
-        </section>
 
         {showFilterBar && (
           <FilterBar

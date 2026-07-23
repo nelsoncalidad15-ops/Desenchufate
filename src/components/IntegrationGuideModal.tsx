@@ -45,7 +45,7 @@ export const IntegrationGuideModal: React.FC<IntegrationGuideModalProps> = ({
             <div>
               <h3 className="text-lg font-black text-slate-900">Guia de integracion</h3>
               <p className="text-xs font-medium text-slate-500">
-                Flujo local, GitHub, Netlify y Google Sheets
+                Hoja maestra, Formulario, Netlify y Google Sheets
               </p>
             </div>
           </div>
@@ -76,8 +76,8 @@ export const IntegrationGuideModal: React.FC<IntegrationGuideModalProps> = ({
             2. Google Form y Google Sheet
           </h4>
           <div className="rounded-2xl border border-slate-200/80 bg-slate-50 p-3.5 text-xs text-slate-700 space-y-1.5">
-            <p>Crea un Google Form con este orden exacto de columnas:</p>
-            <p>`Timestamp`, `Empresa / Marca`, `Sede / Sucursal`, `Area Auditada`, `Tipo de Desvio Detectado`, `Observaciones / Comentarios`, `Fotografia de Evidencia`.</p>
+            <p>Crea estas pestanas maestras: `EMPRESAS`, `AREAS`, `TIPOS_DESVIO` y `CONFIG`.</p>
+            <p>`EMPRESAS`: ID_EMPRESA, EMPRESA, SEDE, ACTIVA, ORDEN. `AREAS`: ID_AREA, ID_EMPRESA, AREA, ACTIVA, ORDEN.</p>
             <p>Vinculalo a una hoja y deja la pestaña con el nombre `Respuestas de formulario 1`.</p>
           </div>
         </div>
@@ -101,10 +101,10 @@ export const IntegrationGuideModal: React.FC<IntegrationGuideModalProps> = ({
           </pre>
           <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/60 p-3.5 text-xs text-slate-800 space-y-1">
             <p>En tu Sheet: `Extensiones {'>'} Apps Script`.</p>
-            <p>Reemplaza todo el archivo `Code.gs` por este bloque.</p>
+            <p>Reemplaza todo el archivo `Code.gs` por este bloque y completa `FORM_ID`.</p>
             <p>Luego: `Implementar {'>'} Nueva implementacion {'>'} Aplicacion web`.</p>
             <p>Acceso: `Cualquier persona`.</p>
-            <p>Copia la URL publicada. Esa es la que va en Netlify.</p>
+            <p>Ejecuta una vez `actualizarOpcionesFormulario`; luego copia la URL publicada para Netlify.</p>
           </div>
         </div>
 

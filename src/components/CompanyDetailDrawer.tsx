@@ -8,6 +8,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { EmpresaCalculada, RegistroDesvio, RegistroDesvio as RegistroType } from '../types';
+import { getBrandTheme } from '../utils/brandTheme';
 
 interface CompanyDetailDrawerProps {
   empresa: EmpresaCalculada | null;
@@ -25,6 +26,7 @@ export const CompanyDetailDrawer: React.FC<CompanyDetailDrawerProps> = ({
   if (!empresa) return null;
 
   const companyRegs = registros.filter((r) => r.idEmpresa === empresa.id);
+  const theme = getBrandTheme(empresa.nombre);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200">
@@ -33,12 +35,12 @@ export const CompanyDetailDrawer: React.FC<CompanyDetailDrawerProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700">
+              <div className="p-3 rounded-2xl border" style={{ backgroundColor: theme.soft, borderColor: theme.border, color: theme.ink }}>
                 <Building2 className="w-6 h-6" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-black text-emerald-700 uppercase tracking-wider">
+                  <span className="text-xs font-black uppercase tracking-wider" style={{ color: theme.ink }}>
                     Detalle de Empresa
                   </span>
                   <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 font-mono">

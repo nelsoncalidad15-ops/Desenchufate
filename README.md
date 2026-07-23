@@ -1,55 +1,71 @@
 ﻿# DESENCHUFATE
 
-Dashboard de control energetico para Grupo Zenova. El proyecto esta preparado para dos modos:
-
-- Modo local: usa datos mock para desarrollar sin depender de Google Sheets ni gastar creditos.
-- Modo produccion: consume una Web App de Google Apps Script publicada desde la hoja de respuestas del formulario.
+Dashboard de control energetico para Grupo Zenova. Cada area activa empieza el mes con 100 puntos. Los desvios descuentan puntos y el puntaje de cada concesionario o sede es el promedio simple de sus areas activas. Asi se comparan de forma justa aunque tengan diferente cantidad de areas.
 
 ## Trabajo local
 
-1. Instala dependencias con `npm install`.
-2. Crea un archivo `.env.local` con este contenido:
+1. Crea `.env.local`:
 
 ```env
 VITE_USE_LIVE_DATA=false
 VITE_GOOGLE_SHEETS_SCRIPT_URL=
 ```
 
-3. Ejecuta `npm run dev`.
-4. La app quedara en `http://localhost:3000` usando datos de ejemplo.
+2. Ejecuta `npm run dev`.
+3. Abre `http://localhost:3000`.
 
-## GitHub
+## Estructura del Google Sheet
 
-```bash
-git init
-git add .
-git commit -m "Base inicial Desenchufate"
-git branch -M main
-git remote add origin TU_URL_DEL_REPO
-git push -u origin main
-```
+Crea estas pestanas, respetando exactamente los encabezados de la primera fila:
+
+| Pestana | Encabezados |
+| --- | --- |
+| `EMPRESAS` | `ID_EMPRESA`, `EMPRESA`, `SEDE`, `ACTIVA`, `ORDEN` |
+| `AREAS` | `ID_AREA`, `ID_EMPRESA`, `AREA`, `ACTIVA`, `ORDEN` |
+| `TIPOS_DESVIO` | `ID_TIPO`, `TIPO_DESVIO`, `PUNTOS_DESCUENTO`, `ICONO`, `ACTIVO`, `ORDEN` |
+| `CONFIG` | `CLAVE`, `VALOR` |
+
+Ejemplo de `EMPRESAS`: `EMP001 | Autosol | Jujuy | Si | 1`.
+
+Ejemplo de `AREAS`: `AR001 | EMP001 | Taller | Si | 1`.
+
+Ejemplo de `TIPOS_DESVIO`: `DES001 | Luz encendida sin necesidad | 1 | lightbulb | Si | 1`.
+
+En `CONFIG` carga al menos: `PUNTAJE_INICIAL = 100`, `LIMITE_EXCELENTE = 95`, `LIMITE_BUENO = 85` y `LIMITE_ALERTA = 70`.
+
+## Formulario y Apps Script
+
+Las preguntas del Google Form deben llamarse exactamente:
+
+- `Empresa / Marca`
+- `Sede / Sucursal`
+- `Area Auditada`
+- `Tipo de Desvio Detectado`
+- `Observaciones / Comentarios`
+- `Fotografia de Evidencia`
+
+La hoja de respuestas debe llamarse `Respuestas de formulario 1`.
+
+1. En el Sheet abre `Extensiones > Apps Script`.
+2. Pega [Code.gs](apps-script/Code.gs).
+3. En `FORM_ID`, pega el identificador que aparece en la URL del Form, entre `/d/` y `/edit`.
+4. Ejecuta una vez `actualizarOpcionesFormulario` y acepta los permisos. Las listas del Form se cargaran desde `EMPRESAS`, `AREAS` y `TIPOS_DESVIO`.
+5. Cada vez que modifiques esos catalogos, vuelve a ejecutar esa funcion. Mas adelante podemos automatizarlo con un disparador.
+6. Publica `doGet` como `Implementar > Nueva implementacion > Aplicacion web`, con acceso `Cualquier persona`.
+
+Las areas en el Form se muestran como `Empresa | Sede | Area` para evitar confusiones cuando se repite un nombre como "Ventas".
 
 ## Netlify
 
-Configuracion esperada:
+En Netlify conecta el repositorio y configura:
 
 - Build command: `npm run build`
 - Publish directory: `dist`
-- Variables de entorno:
-  - `VITE_USE_LIVE_DATA=true`
-  - `VITE_GOOGLE_SHEETS_SCRIPT_URL=TU_URL_DE_APPS_SCRIPT`
-
-## Google Sheets + Apps Script
-
-1. Crea el Google Form y vinculalo a una hoja.
-2. Deja la hoja de respuestas con el nombre `Respuestas de formulario 1`.
-3. En `Extensiones > Apps Script`, pega el contenido de `apps-script/Code.gs`.
-4. Publica como `Aplicacion web` con acceso `Cualquier persona`.
-5. Copia la URL y usala en Netlify.
+- `VITE_USE_LIVE_DATA=true`
+- `VITE_GOOGLE_SHEETS_SCRIPT_URL=URL_DE_TU_APPS_SCRIPT`
 
 ## Archivos importantes
 
-- `src/services/sourceDataService.ts`: decide entre datos mock o datos reales.
-- `src/services/appsScriptTemplate.ts`: bloque listo para copiar en Apps Script.
-- `apps-script/Code.gs`: mismo bloque, version archivo.
-- `netlify.toml`: configuracion de build para Netlify.
+- [sourceDataService.ts](src/services/sourceDataService.ts): alterna entre datos locales y datos del Sheet.
+- [Code.gs](apps-script/Code.gs): API de lectura y sincronizacion de listas del Form.
+- [brandTheme.ts](src/utils/brandTheme.ts): colores de Autolux, Autosol y Autociel.

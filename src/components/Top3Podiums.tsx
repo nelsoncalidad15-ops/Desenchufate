@@ -10,6 +10,7 @@ import {
   Flame,
 } from 'lucide-react';
 import { EmpresaCalculada, AreaCalculada } from '../types';
+import { getBrandTheme } from '../utils/brandTheme';
 
 interface Top3PodiumsProps {
   empresas: EmpresaCalculada[];
@@ -134,6 +135,7 @@ export const Top3Podiums: React.FC<Top3PodiumsProps> = ({
                 {podiumOrder.map(({ emp, pos }) => {
                   const isFirst = pos === 1;
                   const isSecond = pos === 2;
+                  const theme = getBrandTheme(emp.nombre);
 
                   const cardStyle = isFirst
                     ? 'bg-slate-800/90 border-2 border-amber-400/80 text-white shadow-lg'
@@ -151,7 +153,7 @@ export const Top3Podiums: React.FC<Top3PodiumsProps> = ({
                     <div
                       key={emp.id}
                       onClick={() => onSelectCompany(emp.id)}
-                      className={`rounded-2xl p-4.5 cursor-pointer transition-all hover:bg-slate-800 flex flex-col justify-between group ${cardStyle}`}
+                      className={`rounded-2xl p-4.5 cursor-pointer transition-all hover:bg-slate-800 flex flex-col justify-between group ${cardStyle}`} style={{ borderColor: theme.accent, borderTopWidth: '3px' }}
                     >
                       <div>
                         <div className="flex items-center justify-between mb-2.5">
@@ -163,7 +165,7 @@ export const Top3Podiums: React.FC<Top3PodiumsProps> = ({
                           </span>
                         </div>
 
-                        <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">
+                        <h3 className="text-lg font-bold transition-colors" style={{ color: theme.border }}>
                           {emp.nombre}
                         </h3>
                         <p className="text-xs text-slate-400 mt-0.5">
