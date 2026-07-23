@@ -1,0 +1,6 @@
+{
+  "name": "Desenchufate - Control Energético Grupo Zenova",
+  "description": "Dashboard corporativo para la medición, comparación y optimización del desempeño energético de las empresas y áreas del Grupo Zenova.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
