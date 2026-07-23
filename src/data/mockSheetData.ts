@@ -6,7 +6,7 @@ export const INITIAL_CONFIG: ConfigSheet = {
   LIMITE_BUENO: 85,
   LIMITE_ALERTA: 70,
   NOMBRE_PROGRAMA: 'Desenchufate',
-  NOMBRE_GRUPO: 'Grupo Zenova',
+  NOMBRE_GRUPO: 'Grupo Cenoa',
   MOSTRAR_FOTOS: 'Sí',
 };
 

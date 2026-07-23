@@ -210,7 +210,7 @@ export function calculateDashboardData(
     emp.posicion = idx + 1;
   });
 
-  // 4. Group Zenova overall score
+  // 4. Group Cenoa overall score
   const companyScores = empresasList.map((e) => e.puntaje);
   const puntajeGrupo = companyScores.length > 0
     ? Math.round((companyScores.reduce((a, b) => a + b, 0) / companyScores.length) * 10) / 10
@@ -404,7 +404,7 @@ export function getGoogleAppsScriptCode(): {
   scriptsHtml: string;
 } {
   const codeGs = `/**
- * Google Apps Script Backend for "Desenchufate" - Grupo Zenova
+ * Google Apps Script Backend for "Desenchufate" - Grupo Cenoa
  * Publíquelo como Web App con acceso "Cualquier persona" (Anyone).
  */
 
@@ -413,7 +413,7 @@ const SPREADSHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
 function doGet() {
   return HtmlService.createTemplateFromFile('Index')
     .evaluate()
-    .setTitle('Desenchufate - Grupo Zenova')
+    .setTitle('Desenchufate - Grupo Cenoa')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
@@ -450,7 +450,7 @@ function obtenerDatosDashboard(filtros) {
     LIMITE_BUENO: 85,
     LIMITE_ALERTA: 70,
     NOMBRE_PROGRAMA: 'Desenchufate',
-    NOMBRE_GRUPO: 'Grupo Zenova',
+    NOMBRE_GRUPO: 'Grupo Cenoa',
     MOSTRAR_FOTOS: 'Sí'
   };
   try {
@@ -569,7 +569,7 @@ function obtenerDatosDashboard(filtros) {
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Desenchufate - Grupo Zenova</title>
+  <title>Desenchufate - Grupo Cenoa</title>
   <?!= include('Styles'); ?>
 </head>
 <body>

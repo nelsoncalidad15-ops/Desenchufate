@@ -1,6 +1,6 @@
 # GUÍA COMPLETA DE INTEGRACIÓN: GOOGLE FORMS + GOOGLE SHEETS + APPS SCRIPT + NETLIFY
 
-Este documento contiene la especificación exacta para la puesta en producción del sistema **DESENCHUFATE** para el Grupo Zenova.
+Este documento contiene la especificación exacta para la puesta en producción del sistema **DESENCHUFATE** para el Grupo Cenoa.
 
 ---
 
@@ -10,7 +10,7 @@ Crea un formulario en **Google Forms** con la siguiente estructura exacta para q
 
 ### 📌 Datos del Formulario
 * **Nombre del Formulario**: `DESENCHUFATE - Registro de Auditorías de Eficiencia Energética`
-* **Descripción**: *Sistema de control y auditoría energética diaria por sede y área para el Grupo Zenova.*
+* **Descripción**: *Sistema de control y auditoría energética diaria por sede y área para el Grupo Cenoa.*
 
 ### 📋 Campos del Formulario (Preguntas)
 
@@ -70,7 +70,7 @@ function doGet(e) {
   
   var responsePayload = {
     programa: "DESENCHUFATE",
-    grupo: "Grupo Zenova",
+    grupo: "Grupo Cenoa",
     ultimaActualizacion: new Date().toISOString(),
     totalRegistros: registros.length,
     registros: registros
@@ -100,4 +100,4 @@ function doGet(e) {
 
 ---
 
-*Documento generado para el Dashboard DESENCHUFATE - Control Energético Grupo Zenova.*
+*Documento generado para el Dashboard DESENCHUFATE - Control Energético Grupo Cenoa.*

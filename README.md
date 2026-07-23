@@ -1,6 +1,6 @@
-﻿# DESENCHUFATE
+# DESENCHUFATE
 
-Dashboard de control energetico para Grupo Zenova. Cada area activa empieza el mes con 100 puntos. Los desvios descuentan puntos y el puntaje de cada concesionario o sede es el promedio simple de sus areas activas. Asi se comparan de forma justa aunque tengan diferente cantidad de areas.
+Dashboard de control energetico para Grupo Cenoa. Cada area activa empieza el mes con 100 puntos. Los desvios descuentan puntos y el puntaje de cada concesionario o sede es el promedio simple de sus areas activas. Asi se comparan de forma justa aunque tengan diferente cantidad de areas.
 
 ## Trabajo local
 

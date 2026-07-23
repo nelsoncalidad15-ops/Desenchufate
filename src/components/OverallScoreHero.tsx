@@ -91,7 +91,7 @@ export const OverallScoreHero: React.FC<OverallScoreHeroProps> = ({
         <div className="lg:col-span-7 space-y-5">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-300">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>PUNTAJE GENERAL DEL GRUPO ZENOVA</span>
+            <span>PUNTAJE GENERAL DEL GRUPO CENOA</span>
           </div>
 
           <div className="space-y-2">

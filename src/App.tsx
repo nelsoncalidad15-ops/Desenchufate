@@ -352,7 +352,7 @@ export default function App() {
 
       <footer className="mt-12 border-t border-slate-200/80 bg-white px-4 py-4 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-xs font-medium text-slate-500 sm:flex-row">
-          <p>DESENCHUFATE - Control Energetico Grupo Zenova</p>
+          <p>DESENCHUFATE - Control Energetico Grupo Cenoa</p>
           <button
             onClick={() => setShowGuideModal(true)}
             className="flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-100 px-3 py-1.5 font-bold text-slate-700 transition-colors cursor-pointer hover:bg-slate-200"

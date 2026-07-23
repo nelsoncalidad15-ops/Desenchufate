@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Desenchufate - Apps Script
  * Hojas requeridas: EMPRESAS, AREAS, TIPOS_DESVIO, CONFIG y Respuestas de formulario 1.
  */
@@ -17,7 +17,7 @@ function doGet() {
 }
 
 function readConfig(ss) {
-  const config = { PUNTAJE_INICIAL: 100, LIMITE_EXCELENTE: 95, LIMITE_BUENO: 85, LIMITE_ALERTA: 70, NOMBRE_PROGRAMA: 'DESENCHUFATE', NOMBRE_GRUPO: 'Grupo Zenova', MOSTRAR_FOTOS: 'Si' };
+  const config = { PUNTAJE_INICIAL: 100, LIMITE_EXCELENTE: 95, LIMITE_BUENO: 85, LIMITE_ALERTA: 70, NOMBRE_PROGRAMA: 'DESENCHUFATE', NOMBRE_GRUPO: 'Grupo Cenoa', MOSTRAR_FOTOS: 'Si' };
   const sheet = ss.getSheetByName('CONFIG');
   if (!sheet) return config;
   sheet.getDataRange().getValues().slice(1).forEach(function(row) {
