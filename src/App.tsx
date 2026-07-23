@@ -18,7 +18,6 @@ import {
   Layers,
   BarChart3,
   FileSpreadsheet,
-  FileText,
   Table as TableIcon,
   LayoutGrid,
 } from 'lucide-react';
@@ -35,7 +34,6 @@ import { AreaHeatmap } from './components/AreaHeatmap';
 import { AnalyticsCharts } from './components/AnalyticsCharts';
 import { RecentDeviationsLog } from './components/RecentDeviationsLog';
 import { DeviationDetailModal } from './components/DeviationDetailModal';
-import { IntegrationGuideModal } from './components/IntegrationGuideModal';
 
 type MainTab = 'empresas' | 'areas' | 'graficos' | 'bitacora';
 
@@ -61,7 +59,6 @@ export default function App() {
   const [showFilterBar, setShowFilterBar] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [selectedRegistro, setSelectedRegistro] = useState<RegistroDesvio | null>(null);
-  const [showGuideModal, setShowGuideModal] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<string>(() =>
     new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   );
@@ -169,7 +166,7 @@ export default function App() {
   }, [selectedCompanyId, dashboardData.empresas]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased selection:bg-emerald-100 selection:text-emerald-900 pb-20">
+    <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900 font-sans antialiased selection:bg-emerald-100 selection:text-emerald-900">
       <Header
         config={config}
         periodoSeleccionado={`${filtros.mes} ${filtros.anio}`}
@@ -180,7 +177,7 @@ export default function App() {
         onToggleFilterBar={() => setShowFilterBar((prev) => !prev)}
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+      <main className="max-w-7xl mx-auto w-full flex-1 px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
 
         {showFilterBar && (
           <FilterBar
@@ -348,18 +345,9 @@ export default function App() {
             </motion.div>
           </AnimatePresence>
         </section>
-      </main>
-
-      <footer className="mt-12 border-t border-slate-200/80 bg-white px-4 py-4 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-xs font-medium text-slate-500 sm:flex-row">
+      </main>      <footer className="mt-12 border-t border-slate-200/80 bg-white px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl text-center text-xs font-medium text-slate-500">
           <p>DESENCHUFATE - Control Energetico Grupo Cenoa</p>
-          <button
-            onClick={() => setShowGuideModal(true)}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-100 px-3 py-1.5 font-bold text-slate-700 transition-colors cursor-pointer hover:bg-slate-200"
-          >
-            <FileText className="h-3.5 w-3.5 text-slate-600" />
-            <span>Guia de integracion</span>
-          </button>
         </div>
       </footer>
 
@@ -373,11 +361,6 @@ export default function App() {
       <DeviationDetailModal
         registro={selectedRegistro}
         onClose={() => setSelectedRegistro(null)}
-      />
-
-      <IntegrationGuideModal
-        isOpen={showGuideModal}
-        onClose={() => setShowGuideModal(false)}
       />
     </div>
   );
