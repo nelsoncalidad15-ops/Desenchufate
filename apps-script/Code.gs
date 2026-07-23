@@ -81,7 +81,7 @@ function actualizarOpcionesFormulario() {
   const form = FormApp.openById(FORM_ID);
   setChoices(form, 'Empresa / Marca', unique(empresas.map(function(item) { return item.nombre; })));
   setChoices(form, 'Sede / Sucursal', unique(empresas.map(function(item) { return item.sede; })));
-  setChoices(form, 'Area Auditada', areas.map(function(item) { return areaLabel(item, empresas); }));
+  setChoices(form, 'Area Auditada', unique(areas.map(function(item) { return item.nombre; })));
   setChoices(form, 'Tipo de Desvio Detectado', tipos.map(function(item) { return item.tipo; }));
 }
 
