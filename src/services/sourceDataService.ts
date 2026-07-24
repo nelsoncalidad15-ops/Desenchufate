@@ -41,7 +41,14 @@ interface AppsScriptPayload {
   areas?: AppsScriptArea[]; tiposDesvio?: AppsScriptTipo[]; registros?: AppsScriptRegistro[];
 }
 
+interface CachedLivePayload {
+  sourceData: DashboardSourceData;
+  lastUpdate?: string;
+  cachedAt: string;
+}
+
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+const LIVE_CACHE_KEY = 'desenchufate-live-cache-v1';
 
 function cloneDefaults(): DashboardSourceData {
   return {
@@ -53,7 +60,50 @@ function cloneDefaults(): DashboardSourceData {
   };
 }
 
-export function getDefaultDashboardSourceData(): DashboardSourceData { return cloneDefaults(); }
+function getCachedLivePayload(): CachedLivePayload | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(LIVE_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CachedLivePayload;
+    if (!parsed?.sourceData) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function saveCachedLivePayload(sourceData: DashboardSourceData, lastUpdate?: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    const payload: CachedLivePayload = {
+      sourceData,
+      lastUpdate,
+      cachedAt: new Date().toISOString(),
+    };
+    window.localStorage.setItem(LIVE_CACHE_KEY, JSON.stringify(payload));
+  } catch {
+    // ignore cache write failures
+  }
+}
+
+export function getDefaultDashboardSourceData(): DashboardSourceData {
+  const cached = getCachedLivePayload();
+  return cached?.sourceData || cloneDefaults();
+}
+
+export function getDefaultDataSourceStatus(): DataSourceStatus {
+  const cached = getCachedLivePayload();
+  if (cached) {
+    return {
+      mode: 'live',
+      label: 'Google Sheets en cache',
+      detail: 'Mostrando ultimo dato guardado mientras se actualiza en segundo plano.',
+      lastUpdate: cached.lastUpdate,
+    };
+  }
+  return { mode: 'mock', label: 'Modo local', detail: '' };
+}
 
 function slugify(value: string): string {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -110,9 +160,23 @@ export async function loadDashboardSourceData(): Promise<{ sourceData: Dashboard
     const response = await fetch(scriptUrl, { method: 'GET', headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error(`Apps Script devolvio ${response.status}`);
     const payload = await response.json() as AppsScriptPayload;
-    return { sourceData: buildDataFromAppsScript(payload), sourceStatus: { mode: 'live', label: 'Google Sheets conectado', detail: '', lastUpdate: payload.ultimaActualizacion } };
+    const sourceData = buildDataFromAppsScript(payload);
+    saveCachedLivePayload(sourceData, payload.ultimaActualizacion);
+    return { sourceData, sourceStatus: { mode: 'live', label: 'Google Sheets conectado', detail: '', lastUpdate: payload.ultimaActualizacion } };
   } catch (error) {
-    console.error('Fallo la carga remota, se mantiene el modo local.', error);
+    console.error('Fallo la carga remota, se usa el ultimo dato guardado si existe.', error);
+    const cached = getCachedLivePayload();
+    if (cached) {
+      return {
+        sourceData: cached.sourceData,
+        sourceStatus: {
+          mode: 'live',
+          label: 'Google Sheets en cache',
+          detail: 'No se pudo refrescar en vivo. Se muestra el ultimo dato guardado.',
+          lastUpdate: cached.lastUpdate,
+        },
+      };
+    }
     return { sourceData: cloneDefaults(), sourceStatus: { mode: 'mock', label: 'Modo local por respaldo', detail: '' } };
   }
 }

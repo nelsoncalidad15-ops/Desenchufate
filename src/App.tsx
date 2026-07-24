@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ConfigSheet,
@@ -10,6 +10,7 @@ import { calculateDashboardData } from './services/dataService';
 import {
   getDefaultDashboardSourceData,
   loadDashboardSourceData,
+  getDefaultDataSourceStatus,
   type DashboardSourceData,
 } from './services/sourceDataService';
 
@@ -50,12 +51,13 @@ const DEFAULT_FILTERS: FiltrosState = {
 
 export default function App() {
   const [sourceData, setSourceData] = useState<DashboardSourceData>(() => getDefaultDashboardSourceData());
+  const [sourceStatus, setSourceStatus] = useState(() => getDefaultDataSourceStatus());
 
   const [config, setConfig] = useState<ConfigSheet>(sourceData.config);
   const [filtros, setFiltros] = useState<FiltrosState>(DEFAULT_FILTERS);
   const [activeTab, setActiveTab] = useState<MainTab>('graficos');
-  const [companyViewMode, setCompanyViewMode] = useState<'cards' | 'table'>('cards');
-  const [areaViewMode, setAreaViewMode] = useState<'slider' | 'heatmap' | 'table'>('slider');
+  const [companyViewMode, setCompanyViewMode] = useState<'cards' | 'table'>('table');
+  const [areaViewMode, setAreaViewMode] = useState<'slider' | 'heatmap' | 'table'>('table');
   const [showFilterBar, setShowFilterBar] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [selectedRegistro, setSelectedRegistro] = useState<RegistroDesvio | null>(null);
@@ -72,6 +74,7 @@ export default function App() {
       if (!active) return;
 
       setSourceData(result.sourceData);
+      setSourceStatus(result.sourceStatus);
       setConfig(result.sourceData.config);
       setLastUpdate(
         result.sourceStatus.lastUpdate
@@ -111,6 +114,7 @@ export default function App() {
     setIsRefreshing(true);
     const result = await loadDashboardSourceData();
     setSourceData(result.sourceData);
+    setSourceStatus(result.sourceStatus);
     setConfig(result.sourceData.config);
     setLastUpdate(
       result.sourceStatus.lastUpdate
@@ -365,3 +369,6 @@ export default function App() {
     </div>
   );
 }
+
+
+

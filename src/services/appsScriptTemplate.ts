@@ -1,20 +1,37 @@
-export function getGoogleAppsScriptCode(): { codeGs: string } {
+﻿export function getGoogleAppsScriptCode(): { codeGs: string } {
   const codeGs = String.raw`/**
  * Desenchufate - Apps Script
  * Hojas requeridas: EMPRESAS, AREAS, TIPOS_DESVIO, CONFIG y Respuestas de formulario 1.
  */
 const FORM_ID = ''; // Pega aqui el ID de tu Google Form para sincronizar sus listas.
 const RESPUESTAS_SHEET = 'Respuestas de formulario 1';
+const DASHBOARD_CACHE_SECONDS = 120;
+
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('Desenchufate')
+    .addItem('Sincronizar formulario', 'actualizarOpcionesFormulario')
+    .addToUi();
+}
 
 function doGet() {
+  const cache = CacheService.getScriptCache();
+  const cached = cache.get('dashboard_payload_v1');
+  if (cached) {
+    return ContentService.createTextOutput(cached).setMimeType(ContentService.MimeType.JSON);
+  }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const empresas = readEmpresas(ss);
   const areas = readAreas(ss);
   const tiposDesvio = readTiposDesvio(ss);
-  return ContentService.createTextOutput(JSON.stringify({
+  const payload = JSON.stringify({
     config: readConfig(ss), empresas: empresas, areas: areas, tiposDesvio: tiposDesvio,
     registros: readRegistros(ss, empresas, areas, tiposDesvio), ultimaActualizacion: new Date().toISOString(),
-  })).setMimeType(ContentService.MimeType.JSON);
+  });
+
+  cache.put('dashboard_payload_v1', payload, DASHBOARD_CACHE_SECONDS);
+  return ContentService.createTextOutput(payload).setMimeType(ContentService.MimeType.JSON);
 }
 
 function readConfig(ss) {
@@ -56,20 +73,29 @@ function readRegistros(ss, empresas, areas, tiposDesvio) {
   const sheet = ss.getSheetByName(RESPUESTAS_SHEET);
   if (!sheet) return [];
   const values = sheet.getDataRange().getValues();
+  if (!values.length) return [];
   const headers = values[0].map(function(header) { return String(header).trim(); });
-  const get = function(row, title) { const index = headers.indexOf(title); return index >= 0 ? row[index] : ''; };
+  const get = function(row, titles) {
+    const options = Array.isArray(titles) ? titles : [titles];
+    for (var i = 0; i < options.length; i++) {
+      var index = headers.indexOf(options[i]);
+      if (index >= 0) return row[index];
+    }
+    return '';
+  };
   return values.slice(1).map(function(row, index) {
-    const empresaName = String(get(row, 'Empresa / Marca') || '').trim();
-    const sede = String(get(row, 'Sede / Sucursal') || '').trim();
-    const areaValue = String(get(row, 'Area Auditada') || '').trim();
-    const tipo = String(get(row, 'Tipo de Desvio Detectado') || '').trim();
+    const timestamp = String(get(row, ['Timestamp', 'Marca temporal', 'Fecha y hora']) || '').trim();
+    const empresaName = String(get(row, ['Empresa / Marca', 'Empresa', 'Marca']) || '').trim();
+    const sede = String(get(row, ['Sede / Sucursal', 'Sede', 'Sucursal']) || '').trim();
+    const areaValue = String(get(row, ['Area Auditada', 'Área Auditada', 'Area', 'Área']) || '').trim();
+    const tipo = String(get(row, ['Tipo de Desvio Detectado', 'Tipo de Desvío Detectado', 'Tipo de Desvio', 'Tipo de Desvío']) || '').trim();
     const empresa = empresas.find(function(item) { return item.nombre.toLowerCase() === empresaName.toLowerCase() && item.sede.toLowerCase() === sede.toLowerCase(); });
     const area = areas.find(function(item) { return item.idEmpresa === (empresa && empresa.id) && (item.nombre.toLowerCase() === areaValue.toLowerCase() || areaLabel(item, empresas) === areaValue); });
     const tipoInfo = tiposDesvio.find(function(item) { return item.tipo.toLowerCase() === tipo.toLowerCase(); });
-    if (!get(row, 'Timestamp')) return null;
-    return { id: 'REG-' + (index + 1), timestamp: get(row, 'Timestamp'), empresa: empresa ? empresa.nombre : empresaName, sede: empresa ? empresa.sede : sede,
+    if (!timestamp) return null;
+    return { id: 'REG-' + (index + 1), timestamp: timestamp, empresa: empresa ? empresa.nombre : empresaName, sede: empresa ? empresa.sede : sede,
       area: area ? area.nombre : areaValue, idEmpresa: empresa ? empresa.id : '', idArea: area ? area.id : '', tipoDesvio: tipo,
-      puntosDescontados: tipoInfo ? tipoInfo.puntosDescuento : 1, observaciones: String(get(row, 'Observaciones / Comentarios') || ''), fotoUrl: String(get(row, 'Fotografia de Evidencia') || '') };
+      puntosDescontados: tipoInfo ? tipoInfo.puntosDescuento : 1, observaciones: String(get(row, ['Observaciones / Comentarios', 'Observaciones', 'Comentarios']) || ''), fotoUrl: String(get(row, ['Fotografia de Evidencia', 'Fotografía de Evidencia', 'Foto']) || '') };
   }).filter(function(item) { return item; });
 }
 
@@ -84,6 +110,8 @@ function actualizarOpcionesFormulario() {
   setChoices(form, 'Sede / Sucursal', unique(empresas.map(function(item) { return item.sede; })));
   setChoices(form, 'Area Auditada', unique(areas.map(function(item) { return item.nombre; })));
   setChoices(form, 'Tipo de Desvio Detectado', tipos.map(function(item) { return item.tipo; }));
+  CacheService.getScriptCache().remove('dashboard_payload_v1');
+  SpreadsheetApp.getUi().alert('Formulario sincronizado correctamente.');
 }
 
 function setChoices(form, title, choices) {
