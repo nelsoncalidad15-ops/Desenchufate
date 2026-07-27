@@ -4,6 +4,7 @@
   AreaSheet,
   TipoDesvioSheet,
   RegistroDesvio,
+  TipoControl,
 } from '../types';
 import {
   INITIAL_CONFIG,
@@ -34,6 +35,7 @@ interface AppsScriptTipo { id: string; tipo: string; icono?: string; activo?: bo
 interface AppsScriptRegistro {
   id?: string; timestamp?: string; empresa?: string; sede?: string; area?: string;
   idEmpresa?: string; idArea?: string; tipoDesvio?: string; puntosDescontados?: number;
+  tipoControl?: string;
   observaciones?: string; fotoUrl?: string;
 }
 interface AppsScriptPayload {
@@ -48,7 +50,7 @@ interface CachedLivePayload {
 }
 
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-const LIVE_CACHE_KEY = 'desenchufate-live-cache-v1';
+const LIVE_CACHE_KEY = 'desenchufate-live-cache-v2';
 
 function cloneDefaults(): DashboardSourceData {
   return {
@@ -117,6 +119,30 @@ function parseTimestamp(value?: string): Date | null {
 
 function getMonthName(date: Date): string { return MONTHS[date.getMonth()] || 'Julio'; }
 
+function normalizarTipoControl(value?: string): TipoControl {
+  const normalized = value
+    ?.normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase() || '';
+
+  if (normalized.includes('observ')) return 'Observacion';
+  if (normalized.includes('apertura') || normalized.includes('antes') || normalized.includes('ingreso')) {
+    return 'Puntuable - Apertura';
+  }
+  return 'Puntuable - Cierre';
+}
+function normalizarConfigPuntaje(config: ConfigSheet): ConfigSheet {
+  if (config.PUNTAJE_INICIAL === 10 && config.LIMITE_EXCELENTE <= 10 && config.LIMITE_BUENO <= 10 && config.LIMITE_ALERTA <= 10) return config;
+  return {
+    ...config,
+    PUNTAJE_INICIAL: 10,
+    LIMITE_EXCELENTE: 10,
+    LIMITE_BUENO: 9,
+    LIMITE_ALERTA: 8,
+  };
+}
+
 function buildDataFromAppsScript(payload: AppsScriptPayload): DashboardSourceData {
   const empresas = (payload.empresas || []).map((empresa, index) => ({
     id: empresa.id, nombre: empresa.nombre.trim(), sede: empresa.sede.trim(), activa: empresa.activa !== false, orden: empresa.orden || index + 1,
@@ -145,11 +171,12 @@ function buildDataFromAppsScript(payload: AppsScriptPayload): DashboardSourceDat
       id: item.id?.trim() || `REG-${index + 1}`, timestamp: item.timestamp?.trim() || parsedDate.toISOString(), fecha: parsedDate.toISOString().slice(0, 10),
       mes: getMonthName(parsedDate), anio: parsedDate.getFullYear(), idEmpresa: empresa?.id || `EMP-${slugify(`${empresaNombre}-${sede}`)}`,
       empresaNombre, sede, idArea: area?.id || `AR-${slugify(`${empresaNombre}-${sede}-${areaNombre}`)}`, areaNombre,
+      tipoControl: normalizarTipoControl(item.tipoControl),
       tipoDesvio: item.tipoDesvio?.trim() || 'Otro desvio energetico', cantidadDesvios: 1, puntosDescontados: Number(item.puntosDescontados) || 1,
       observacion: item.observaciones?.trim() || '', fotoUrl: item.fotoUrl?.trim() || '', mostrarFoto: item.fotoUrl ? 'Si' : 'No',
     } as RegistroDesvio;
   });
-  return { config: { ...INITIAL_CONFIG, ...(payload.config || {}) }, empresas: empresasFinales, areas: areasFinales, tiposDesvio: tiposFinales, registros };
+  return { config: normalizarConfigPuntaje({ ...INITIAL_CONFIG, ...(payload.config || {}) }), empresas: empresasFinales, areas: areasFinales, tiposDesvio: tiposFinales, registros };
 }
 
 export async function loadDashboardSourceData(): Promise<{ sourceData: DashboardSourceData; sourceStatus: DataSourceStatus }> {

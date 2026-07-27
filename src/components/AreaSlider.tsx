@@ -123,7 +123,7 @@ export const AreaSlider: React.FC<AreaSliderProps> = ({ areas, onSelectArea }) =
                   <div>
                     <span className="text-[9px] font-bold text-slate-400 block uppercase font-mono">PUNTAJE</span>
                     <span className={`text-lg font-black font-mono ${style.scoreColor}`}>
-                      {area.puntaje} <span className="text-[10px] text-slate-400 font-normal">/100</span>
+                      {area.porcentaje.toFixed(0)}% <span className="text-[10px] text-slate-400 font-normal">({area.puntaje}/10)</span>
                     </span>
                   </div>
 

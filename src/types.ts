@@ -1,4 +1,5 @@
 export type EstadoPuntaje = 'Excelente' | 'Bueno' | 'Alerta' | 'Crítico';
+export type TipoControl = 'Puntuable - Apertura' | 'Puntuable - Cierre' | 'Observacion';
 
 export interface ConfigSheet {
   PUNTAJE_INICIAL: number;
@@ -45,6 +46,7 @@ export interface RegistroDesvio {
   sede: string;
   idArea: string;
   areaNombre: string;
+  tipoControl?: TipoControl;
   tipoDesvio: string;
   cantidadDesvios: number;
   puntosDescontados: number;
@@ -62,7 +64,10 @@ export interface AreaCalculada {
   puntaje: number;
   porcentaje: number;
   desviosCount: number;
+  desviosPuntuablesCount: number;
   puntosDescontadosTotal: number;
+  observacionesCount: number;
+  penalizacionAplicada: boolean;
   estado: EstadoPuntaje;
   variacion: number;
 }
@@ -118,6 +123,7 @@ export interface ResumenGeneral {
   totalEmpresasActivas: number;
   totalAreasActivas: number;
   totalDesviosPeriodo: number;
+  totalAreasPenalizadas: number;
   totalPuntosDescontados: number;
   mejorEmpresa?: EmpresaCalculada;
   empresaMayorMejora?: EmpresaCalculada;

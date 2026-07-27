@@ -1,10 +1,10 @@
 import { ConfigSheet, EmpresaSheet, AreaSheet, TipoDesvioSheet, RegistroDesvio } from '../types';
 
 export const INITIAL_CONFIG: ConfigSheet = {
-  PUNTAJE_INICIAL: 100,
-  LIMITE_EXCELENTE: 95,
-  LIMITE_BUENO: 85,
-  LIMITE_ALERTA: 70,
+  PUNTAJE_INICIAL: 10,
+  LIMITE_EXCELENTE: 10,
+  LIMITE_BUENO: 9,
+  LIMITE_ALERTA: 8,
   NOMBRE_PROGRAMA: 'Desenchufate',
   NOMBRE_GRUPO: 'Grupo Cenoa',
   MOSTRAR_FOTOS: 'Sí',

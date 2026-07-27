@@ -132,8 +132,8 @@ export const CompanyRanking: React.FC<CompanyRankingProps> = ({
                   </td>
 
                   <td className="px-4 py-3 text-center">
-                    <div className="font-mono text-lg font-black text-slate-900">{emp.puntaje.toFixed(1)}</div>
-                    <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">sobre 100</div>
+                    <div className="font-mono text-lg font-black text-slate-900">{emp.porcentaje.toFixed(1)}%</div>
+                    <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">cumplimiento</div>
                   </td>
 
                   <td className="px-4 py-3 text-center">

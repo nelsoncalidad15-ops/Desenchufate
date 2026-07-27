@@ -124,8 +124,8 @@ export const AreaRanking: React.FC<AreaRankingProps> = ({
                     </td>
 
                     <td className="px-4 py-3 text-center">
-                      <div className="font-mono text-lg font-black text-slate-900">{area.puntaje}</div>
-                      <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">sobre 100</div>
+                      <div className="font-mono text-lg font-black text-slate-900">{area.porcentaje.toFixed(0)}%</div>
+                      <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">{area.puntaje}/10 puntos</div>
                     </td>
 
                     <td className="px-4 py-3 text-center font-mono text-sm font-black text-slate-800">

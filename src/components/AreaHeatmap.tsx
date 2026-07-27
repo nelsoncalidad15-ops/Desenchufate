@@ -98,7 +98,7 @@ export const AreaHeatmap: React.FC<AreaHeatmapProps> = ({
               >
                 <div className="flex items-center justify-between">
                   <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-md border ${style.badge}`}>
-                    {area.puntaje} pts
+                    {area.porcentaje.toFixed(0)}%
                   </span>
                   <span className="text-[10px] text-slate-500 font-mono font-bold">
                     {area.desviosCount} desvíos
@@ -133,14 +133,14 @@ export const AreaHeatmap: React.FC<AreaHeatmapProps> = ({
                     {area.areaNombre} <span className="text-slate-500 font-normal">({area.empresaNombre} - {area.sede})</span>
                   </span>
                   <span className={`font-mono font-black ${style.text}`}>
-                    {area.puntaje} / 100
+                    {area.porcentaje.toFixed(0)}%
                   </span>
                 </div>
 
                 <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${style.bar}`}
-                    style={{ width: `${Math.max(area.puntaje, 3)}%` }}
+                    style={{ width: `${Math.max(area.porcentaje, 3)}%` }}
                   />
                 </div>
               </div>

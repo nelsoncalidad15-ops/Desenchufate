@@ -97,8 +97,9 @@ export function calculateDashboardData(
     regsList: RegistroDesvio[]
   ): AreaCalculada => {
     const areaRegs = regsList.filter((r) => r.idArea === area.id);
-    const puntosDescontadosTotal = areaRegs.reduce((sum, r) => sum + (r.puntosDescontados || 1), 0);
-    const score = Math.max(0, config.PUNTAJE_INICIAL - puntosDescontadosTotal);
+    const desviosPuntuables = areaRegs.filter((r) => r.tipoControl !== 'Observacion');
+    const penalizacionAplicada = desviosPuntuables.length > 0;
+    const score = Math.max(0, config.PUNTAJE_INICIAL - (penalizacionAplicada ? 1 : 0));
     const porcentaje = Math.round((score / config.PUNTAJE_INICIAL) * 100 * 10) / 10;
     const estado = getEstadoPuntaje(score, config);
 
@@ -111,7 +112,10 @@ export function calculateDashboardData(
       puntaje: score,
       porcentaje,
       desviosCount: areaRegs.reduce((sum, r) => sum + (r.cantidadDesvios || 1), 0),
-      puntosDescontadosTotal,
+      desviosPuntuablesCount: desviosPuntuables.reduce((sum, r) => sum + (r.cantidadDesvios || 1), 0),
+      observacionesCount: areaRegs.length - desviosPuntuables.length,
+      penalizacionAplicada,
+      puntosDescontadosTotal: penalizacionAplicada ? 1 : 0,
       estado,
       variacion: 0,
     };
@@ -149,7 +153,7 @@ export function calculateDashboardData(
   // Attach variations to current areas
   allAreasCalculadas.forEach((a) => {
     const prevScore = prevMonthAreasMap[a.id] ?? config.PUNTAJE_INICIAL;
-    a.variacion = Math.round((a.puntaje - prevScore) * 10) / 10;
+    a.variacion = Math.round(((a.puntaje - prevScore) / config.PUNTAJE_INICIAL) * 100 * 10) / 10;
   });
 
   // 3. Compute Company Scores
@@ -180,7 +184,7 @@ export function calculateDashboardData(
     const prevAvg = prevCompanyAreas.length > 0
       ? Math.round((prevCompanyAreas.reduce((a, b) => a + b, 0) / prevCompanyAreas.length) * 10) / 10
       : config.PUNTAJE_INICIAL;
-    const variacionMensual = Math.round((avgScore - prevAvg) * 10) / 10;
+    const variacionMensual = Math.round(((avgScore - prevAvg) / config.PUNTAJE_INICIAL) * 100 * 10) / 10;
 
     let tendencia: 'up' | 'down' | 'stable' = 'stable';
     if (variacionMensual > 0.1) tendencia = 'up';
@@ -230,7 +234,7 @@ export function calculateDashboardData(
   const prevGrupoScore = prevCompanyScores.length > 0
     ? prevCompanyScores.reduce((a, b) => a + b, 0) / prevCompanyScores.length
     : config.PUNTAJE_INICIAL;
-  const variacionGrupo = Math.round((puntajeGrupo - prevGrupoScore) * 10) / 10;
+  const variacionGrupo = Math.round(((puntajeGrupo - prevGrupoScore) / config.PUNTAJE_INICIAL) * 100 * 10) / 10;
 
   let tendenciaGrupo: 'up' | 'down' | 'stable' = 'stable';
   if (variacionGrupo > 0.1) tendenciaGrupo = 'up';
@@ -243,13 +247,12 @@ export function calculateDashboardData(
   });
 
   let totalDesviosPeriodo = 0;
-  let totalPuntosDescontados = 0;
+  const totalAreasPenalizadas = allAreasCalculadas.filter((area) => area.penalizacionAplicada).length;
 
   registrosFiltrados.forEach((r) => {
     const qty = r.cantidadDesvios || 1;
-    const pts = r.puntosDescontados || 1;
+    const pts = r.cantidadDesvios || 1;
     totalDesviosPeriodo += qty;
-    totalPuntosDescontados += pts;
 
     if (!desvioCountsMap[r.tipoDesvio]) {
       desvioCountsMap[r.tipoDesvio] = { cantidad: 0, puntos: 0, icono: 'alert-triangle' };
@@ -314,13 +317,12 @@ export function calculateDashboardData(
       const empAreas = activeAreasRaw.filter((a) => a.idEmpresa === emp.id);
       const empAreaScores = empAreas.map((area) => {
         const areaRegs = regsMes.filter((r) => r.idArea === area.id);
-        const pts = areaRegs.reduce((sum, r) => sum + (r.puntosDescontados || 1), 0);
-        return Math.max(0, config.PUNTAJE_INICIAL - pts);
+        return Math.max(0, config.PUNTAJE_INICIAL - (areaRegs.some((r) => r.tipoControl !== 'Observacion') ? 1 : 0));
       });
       const avg = empAreaScores.length > 0
         ? Math.round((empAreaScores.reduce((a, b) => a + b, 0) / empAreaScores.length) * 10) / 10
         : config.PUNTAJE_INICIAL;
-      compScoresMap[`${emp.nombre} (${emp.sede})`] = avg;
+      compScoresMap[`${emp.nombre} (${emp.sede})`] = Math.round((avg / config.PUNTAJE_INICIAL) * 100 * 10) / 10;
     });
 
     const cValues = Object.values(compScoresMap);
@@ -365,7 +367,8 @@ export function calculateDashboardData(
     totalEmpresasActivas: activeEmpresasRaw.length,
     totalAreasActivas: activeAreasRaw.length,
     totalDesviosPeriodo,
-    totalPuntosDescontados,
+    totalAreasPenalizadas,
+    totalPuntosDescontados: totalAreasPenalizadas,
     mejorEmpresa,
     empresaMayorMejora,
     areaDestacada,

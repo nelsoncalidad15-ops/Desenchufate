@@ -27,6 +27,12 @@ export const CompanyDetailDrawer: React.FC<CompanyDetailDrawerProps> = ({
   if (!empresa) return null;
 
   const companyRegs = registros.filter((r) => r.idEmpresa === empresa.id);
+  const areasOrdenadas = [...empresa.areas].sort((a, b) => {
+    if (b.puntaje !== a.puntaje) return b.puntaje - a.puntaje;
+    if (a.desviosCount !== b.desviosCount) return a.desviosCount - b.desviosCount;
+    return a.areaNombre.localeCompare(b.areaNombre, 'es');
+  });
+
   const theme = getBrandTheme(empresa.nombre);
   const canShowPhoto = (value?: string) => {
     if (!value) return false;
@@ -78,8 +84,8 @@ export const CompanyDetailDrawer: React.FC<CompanyDetailDrawerProps> = ({
           <div className="grid grid-cols-2 gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-center sm:grid-cols-4">
             <div className="space-y-1">
               <span className="text-xs font-bold text-slate-500">PUNTAJE</span>
-              <div className="font-mono text-3xl font-black text-slate-900">{empresa.puntaje.toFixed(1)}</div>
-              <span className="text-[10px] text-slate-400">sobre 100</span>
+              <div className="font-mono text-3xl font-black text-slate-900">{empresa.porcentaje.toFixed(1)}%</div>
+              <span className="text-[10px] text-slate-400">cumplimiento</span>
             </div>
 
             <div className="space-y-1">
@@ -107,7 +113,7 @@ export const CompanyDetailDrawer: React.FC<CompanyDetailDrawerProps> = ({
             </h3>
 
             <div className="space-y-2">
-              {empresa.areas.map((area, idx) => (
+              {areasOrdenadas.map((area, idx) => (
                 <div
                   key={area.id}
                   className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 transition-all hover:bg-slate-100/80"
@@ -118,14 +124,17 @@ export const CompanyDetailDrawer: React.FC<CompanyDetailDrawerProps> = ({
                     </span>
                     <div>
                       <h4 className="text-sm font-black text-slate-900">{area.areaNombre}</h4>
-                      <p className="text-xs font-medium text-slate-500">
+                      <p className="hidden text-xs font-medium text-slate-500">
                         {area.desviosCount} desvios - {area.puntosDescontadosTotal} pts
+                      </p>
+                      <p className="text-xs font-medium text-slate-500">
+                        {area.desviosCount} hallazgos | {area.puntaje}/10 puntos
                       </p>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <span className="font-mono text-base font-black text-slate-900">{area.puntaje} pts</span>
+                    <span className="font-mono text-base font-black text-slate-900">{area.porcentaje.toFixed(0)}% ({area.puntaje}/10)</span>
                     <span
                       className={`block text-[11px] font-bold ${
                         area.estado === 'Excelente'
@@ -180,7 +189,10 @@ export const CompanyDetailDrawer: React.FC<CompanyDetailDrawerProps> = ({
                           <Eye className="h-3 w-3" /> Foto
                         </span>
                       )}
-                      <span className="rounded-md bg-rose-100 px-2 py-0.5 font-mono text-xs font-bold text-rose-800">
+                      <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-bold text-slate-700">
+                        {reg.tipoControl === 'Observacion' ? 'Observacion' : 'Puntuable'}
+                      </span>
+                      <span className="hidden rounded-md bg-rose-100 px-2 py-0.5 font-mono text-xs font-bold text-rose-800">
                         -{reg.puntosDescontados} pt
                       </span>
                     </div>

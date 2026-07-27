@@ -26,7 +26,7 @@ export const Top3Podiums: React.FC<Top3PodiumsProps> = ({
   onSelectCompany,
   onSelectArea,
 }) => {
-  const [activeTab, setActiveTab] = useState<'empresas' | 'mejoresAreas' | 'peoresAreas'>('empresas');
+  const [activeTab, setActiveTab] = useState<'empresas' | 'peoresEmpresas' | 'mejoresAreas' | 'peoresAreas'>('empresas');
 
   const sortedEmpresas = [...empresas].sort((a, b) => b.puntaje - a.puntaje);
   const top1 = sortedEmpresas[0];
@@ -39,6 +39,13 @@ export const Top3Podiums: React.FC<Top3PodiumsProps> = ({
     top3 ? { emp: top3, pos: 3 } : null,
   ].filter(Boolean) as { emp: EmpresaCalculada; pos: number }[];
 
+  const top3PeoresEmpresas = [...empresas]
+    .sort((a, b) => {
+      if (a.puntaje !== b.puntaje) return a.puntaje - b.puntaje;
+      return b.desviosCount - a.desviosCount;
+    })
+    .slice(0, 3);
+
   const top3MejoresAreas = [...areas].sort((a, b) => b.puntaje - a.puntaje).slice(0, 3);
   const top3PeoresAreas = [...areas]
     .sort((a, b) => {
@@ -47,7 +54,7 @@ export const Top3Podiums: React.FC<Top3PodiumsProps> = ({
     })
     .slice(0, 3);
 
-  const top1Score = top1 ? top1.puntaje : 100;
+  const top1Score = top1 ? top1.porcentaje : 100;
 
   return (
     <section className="space-y-3">
@@ -70,7 +77,7 @@ export const Top3Podiums: React.FC<Top3PodiumsProps> = ({
                 <span className="block text-[10px] font-mono uppercase tracking-[0.16em] text-slate-400">DISPUTA POR EL 1° PUESTO</span>
                 <span className="font-medium text-slate-100">
                   <strong className="font-bold text-amber-200">{top2.nombre}</strong> esta a{' '}
-                  <strong className="font-mono font-bold text-emerald-300">{(top1Score - top2.puntaje).toFixed(1)} pts</strong>{' '}
+                  <strong className="font-mono font-bold text-emerald-300">{(top1Score - top2.porcentaje).toFixed(1)} pp</strong>{' '}
                   del liderazgo de <strong className="font-bold text-white">{top1.nombre}</strong>
                 </span>
               </div>
@@ -88,6 +95,16 @@ export const Top3Podiums: React.FC<Top3PodiumsProps> = ({
             }`}
           >
             <Trophy className="h-3.5 w-3.5" /> Sedes Destacadas
+          </button>
+          <button
+            onClick={() => setActiveTab('peoresEmpresas')}
+            className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 transition-all cursor-pointer ${
+              activeTab === 'peoresEmpresas'
+                ? 'border border-rose-400/30 bg-rose-500/15 font-bold text-rose-200'
+                : 'border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            <AlertCircle className="h-3.5 w-3.5 text-rose-300" /> Sedes a Mejorar
           </button>
           <button
             onClick={() => setActiveTab('mejoresAreas')}
@@ -170,15 +187,15 @@ export const Top3Podiums: React.FC<Top3PodiumsProps> = ({
                           <div>
                             <span className="block text-[10px] font-mono uppercase tracking-[0.16em] text-slate-400">PUNTAJE</span>
                             <span className={`font-mono text-3xl font-black ${isFirst ? 'text-amber-200' : 'text-white'}`}>
-                              {emp.puntaje.toFixed(1)}
+                              {emp.porcentaje.toFixed(1)}
                             </span>
-                            <span className="ml-1 text-sm text-slate-400">/100</span>
+                            <span className="ml-1 text-sm text-slate-400">%</span>
                           </div>
 
                           <div className="text-right">
                             <span className="flex items-center justify-end gap-1 font-mono text-xs font-bold text-emerald-300">
                               <TrendingUp className="h-3.5 w-3.5" />
-                              {emp.variacionMensual >= 0 ? `+${emp.variacionMensual}` : emp.variacionMensual}
+                              {emp.variacionMensual >= 0 ? `+${emp.variacionMensual}` : emp.variacionMensual} pp
                             </span>
                             <span className="mt-1 block text-[11px] uppercase tracking-[0.14em] text-slate-500">variacion</span>
                           </div>
@@ -187,7 +204,7 @@ export const Top3Podiums: React.FC<Top3PodiumsProps> = ({
                         <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
                           <div
                             className={`h-full rounded-full ${isFirst ? 'bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300' : 'bg-gradient-to-r from-cyan-300 to-emerald-300'}`}
-                            style={{ width: `${Math.max(emp.puntaje, 8)}%` }}
+                            style={{ width: `${Math.max(emp.porcentaje, 8)}%` }}
                           />
                         </div>
 
@@ -201,6 +218,57 @@ export const Top3Podiums: React.FC<Top3PodiumsProps> = ({
               </motion.div>
             )}
 
+            {activeTab === 'peoresEmpresas' && (
+              <motion.div
+                key="peoresEmpresasPodium"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.18 }}
+                className="grid grid-cols-1 gap-3 md:grid-cols-3"
+              >
+                {top3PeoresEmpresas.map((emp, idx) => {
+                  const theme = getBrandTheme(emp.nombre);
+                  return (
+                    <div
+                      key={emp.id}
+                      onClick={() => onSelectCompany(emp.id)}
+                      className="group cursor-pointer rounded-[1.4rem] border border-rose-400/20 bg-rose-500/10 p-4 transition-all duration-200 hover:-translate-y-1 hover:bg-rose-500/15"
+                      style={{ borderTopColor: theme.accent, borderTopWidth: '3px' }}
+                    >
+                      <div className="mb-4 flex items-center justify-between gap-2">
+                        <span className="rounded-full bg-rose-500/20 px-2.5 py-1 font-mono text-[10px] font-black tracking-wide text-rose-200">
+                          #{String(idx + 1).padStart(2, '0')} MENOR PUNTAJE
+                        </span>
+                        <span className="text-[10px] font-mono uppercase tracking-[0.14em] text-slate-400">
+                          SEDE {emp.sede}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <BrandLogos companyName={emp.nombre} size="md" />
+                        <div>
+                          <h3 className="text-lg font-black text-white">{emp.nombre}</h3>
+                          <p className="mt-0.5 text-xs text-slate-400">{emp.areasCount} areas evaluadas</p>
+                        </div>
+                      </div>
+                      <div className="mt-5 flex items-end justify-between border-t border-white/10 pt-3">
+                        <div>
+                          <span className="block text-[10px] font-mono uppercase tracking-[0.16em] text-slate-400">PUNTAJE</span>
+                          <span className="font-mono text-2xl font-black text-rose-200">{emp.porcentaje.toFixed(1)}%</span>
+                        </div>
+                        <span className="text-xs font-bold text-rose-300">{emp.desviosCount} hallazgos</span>
+                      </div>
+                      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+                        <div className="h-full rounded-full bg-gradient-to-r from-rose-400 to-amber-300" style={{ width: `${Math.max(emp.porcentaje, 8)}%` }} />
+                      </div>
+                      <div className="mt-3 flex items-center justify-end gap-1 text-[11px] font-semibold text-slate-300 transition-colors group-hover:text-white">
+                        Ver detalle <ChevronRight className="h-3.5 w-3.5" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </motion.div>
+            )}
             {activeTab === 'mejoresAreas' && (
               <motion.div
                 key="mejoresAreasPodium"
@@ -227,7 +295,7 @@ export const Top3Podiums: React.FC<Top3PodiumsProps> = ({
                     </div>
 
                     <div className="text-right">
-                      <span className="block font-mono text-xl font-black text-emerald-200">{area.puntaje}</span>
+                      <span className="block font-mono text-xl font-black text-emerald-200">{area.porcentaje.toFixed(0)}%</span>
                       <span className="text-[10px] text-slate-400">0 desvios</span>
                     </div>
                   </div>
@@ -261,7 +329,7 @@ export const Top3Podiums: React.FC<Top3PodiumsProps> = ({
                     </div>
 
                     <div className="text-right">
-                      <span className="block font-mono text-xl font-black text-rose-200">{area.puntaje}</span>
+                      <span className="block font-mono text-xl font-black text-rose-200">{area.porcentaje.toFixed(0)}%</span>
                       <span className="text-[10px] font-bold text-rose-300">-{area.puntosDescontadosTotal} pts</span>
                     </div>
                   </div>

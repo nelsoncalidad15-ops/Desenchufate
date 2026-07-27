@@ -15,7 +15,7 @@ function onOpen() {
 
 function doGet() {
   const cache = CacheService.getScriptCache();
-  const cached = cache.get('dashboard_payload_v1');
+  const cached = cache.get('dashboard_payload_v2');
   if (cached) {
     return ContentService.createTextOutput(cached).setMimeType(ContentService.MimeType.JSON);
   }
@@ -26,15 +26,15 @@ function doGet() {
   const tiposDesvio = readTiposDesvio(ss);
   const payload = JSON.stringify({
     config: readConfig(ss), empresas: empresas, areas: areas, tiposDesvio: tiposDesvio,
-    registros: readRegistros(ss, empresas, areas, tiposDesvio), ultimaActualizacion: new Date().toISOString(),
+    registros: expandirRegistros(readRegistros(ss, empresas, areas, tiposDesvio), tiposDesvio), ultimaActualizacion: new Date().toISOString(),
   });
 
-  cache.put('dashboard_payload_v1', payload, DASHBOARD_CACHE_SECONDS);
+  cache.put('dashboard_payload_v2', payload, DASHBOARD_CACHE_SECONDS);
   return ContentService.createTextOutput(payload).setMimeType(ContentService.MimeType.JSON);
 }
 
 function readConfig(ss) {
-  const config = { PUNTAJE_INICIAL: 100, LIMITE_EXCELENTE: 95, LIMITE_BUENO: 85, LIMITE_ALERTA: 70, NOMBRE_PROGRAMA: 'DESENCHUFATE', NOMBRE_GRUPO: 'Grupo Cenoa', MOSTRAR_FOTOS: 'Si' };
+  const config = { PUNTAJE_INICIAL: 10, LIMITE_EXCELENTE: 10, LIMITE_BUENO: 9, LIMITE_ALERTA: 8, NOMBRE_PROGRAMA: 'DESENCHUFATE', NOMBRE_GRUPO: 'Grupo Cenoa', MOSTRAR_FOTOS: 'Si' };
   const sheet = ss.getSheetByName('CONFIG');
   if (!sheet) return config;
   sheet.getDataRange().getValues().slice(1).forEach(function(row) {
@@ -88,17 +88,32 @@ function readRegistros(ss, empresas, areas, tiposDesvio) {
     const sede = String(get(row, ['Sede / Sucursal', 'Sede', 'Sucursal']) || '').trim();
     const areaValue = String(get(row, ['Area Auditada', 'Área Auditada', 'Area', 'Área']) || '').trim();
     const tipo = String(get(row, ['Tipo de Desvio Detectado', 'Tipo de Desvío Detectado', 'Tipo de Desvio', 'Tipo de Desvío']) || '').trim();
+    const tipoControl = String(get(row, ['Tipo de Control', 'Tipo Control', 'Control']) || '').trim();
     const empresa = empresas.find(function(item) { return item.nombre.toLowerCase() === empresaName.toLowerCase() && item.sede.toLowerCase() === sede.toLowerCase(); });
     const area = areas.find(function(item) { return item.idEmpresa === (empresa && empresa.id) && (item.nombre.toLowerCase() === areaValue.toLowerCase() || areaLabel(item, empresas) === areaValue); });
     const tipoInfo = tiposDesvio.find(function(item) { return item.tipo.toLowerCase() === tipo.toLowerCase(); });
     if (!timestamp) return null;
     return { id: 'REG-' + (index + 1), timestamp: timestamp, empresa: empresa ? empresa.nombre : empresaName, sede: empresa ? empresa.sede : sede,
-      area: area ? area.nombre : areaValue, idEmpresa: empresa ? empresa.id : '', idArea: area ? area.id : '', tipoDesvio: tipo,
+      area: area ? area.nombre : areaValue, idEmpresa: empresa ? empresa.id : '', idArea: area ? area.id : '', tipoControl: tipoControl || 'Puntuable - Cierre', tipoDesvio: tipo,
       puntosDescontados: tipoInfo ? tipoInfo.puntosDescuento : 1, observaciones: String(get(row, ['Observaciones / Comentarios', 'Observaciones', 'Comentarios']) || ''), fotoUrl: String(get(row, ['Fotografia de Evidencia', 'Fotografía de Evidencia', 'Foto']) || '') };
   }).filter(function(item) { return item; });
 }
 
+function expandirRegistros(registros, tiposDesvio) {
+  const finales = [];
+  registros.forEach(function(registro) {
+    const tipos = String(registro.tipoDesvio || '').split(/\s*,\s*/).map(function(tipo) { return tipo.trim(); }).filter(function(tipo) { return tipo; });
+    tipos.forEach(function(tipo, index) {
+      const tipoInfo = tiposDesvio.find(function(item) { return item.tipo.toLowerCase() === tipo.toLowerCase(); });
+      finales.push({ id: registro.id + '-' + (index + 1), timestamp: registro.timestamp, empresa: registro.empresa, sede: registro.sede,
+        area: registro.area, idEmpresa: registro.idEmpresa, idArea: registro.idArea, tipoControl: registro.tipoControl, tipoDesvio: tipo,
+        puntosDescontados: tipoInfo ? tipoInfo.puntosDescuento : 1, observaciones: registro.observaciones, fotoUrl: registro.fotoUrl });
+    });
+  });
+  return finales;
+}
 function actualizarOpcionesFormulario() {
+
   if (!FORM_ID) throw new Error('Completa FORM_ID con el ID de tu Google Form.');
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const empresas = readEmpresas(ss);
@@ -109,15 +124,17 @@ function actualizarOpcionesFormulario() {
   setChoices(form, 'Sede / Sucursal', unique(empresas.map(function(item) { return item.sede; })));
   setChoices(form, 'Area Auditada', unique(areas.map(function(item) { return item.nombre; })));
   setChoices(form, 'Tipo de Desvio Detectado', tipos.map(function(item) { return item.tipo; }));
-  CacheService.getScriptCache().remove('dashboard_payload_v1');
+  setChoices(form, 'Tipo de Control', ['Puntuable - Apertura', 'Puntuable - Cierre', 'Observacion']);
+  CacheService.getScriptCache().remove('dashboard_payload_v2');
   SpreadsheetApp.getUi().alert('Formulario sincronizado correctamente.');
 }
 
 function setChoices(form, title, choices) {
   const item = form.getItems().find(function(candidate) { return candidate.getTitle() === title; });
-  if (!item) throw new Error('No existe la pregunta: ' + title);
+  if (!item) { form.addListItem().setTitle(title).setRequired(true).setChoiceValues(choices); return; }
   if (item.getType() === FormApp.ItemType.LIST) item.asListItem().setChoiceValues(choices);
   else if (item.getType() === FormApp.ItemType.MULTIPLE_CHOICE) item.asMultipleChoiceItem().setChoiceValues(choices);
+  else if (item.getType() === FormApp.ItemType.CHECKBOX) item.asCheckboxItem().setChoiceValues(choices);
   else throw new Error('La pregunta ' + title + ' debe ser Desplegable u Opcion multiple.');
 }
 

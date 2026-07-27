@@ -86,8 +86,11 @@ export const DeviationDetailModal: React.FC<DeviationDetailModalProps> = ({
             <span className="text-slate-500 font-bold flex items-center gap-1">
               <AlertCircle className="w-3.5 h-3.5 text-rose-600" /> Impacto Energético
             </span>
-            <span className="text-sm font-black text-rose-700 font-mono block">
+            <span className="hidden text-sm font-black text-rose-700 font-mono block">
               -{registro.puntosDescontados} Puntos ({registro.cantidadDesvios} ítem/s)
+            </span>
+            <span className="text-sm font-black text-rose-700 font-mono block">
+              {registro.tipoControl === 'Observacion' ? 'Solo observacion: no afecta puntaje' : 'Control puntuable: el area queda en 90% (9/10)'}
             </span>
           </div>
         </div>

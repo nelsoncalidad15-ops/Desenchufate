@@ -101,3 +101,15 @@ function doGet(e) {
 ---
 
 *Documento generado para el Dashboard DESENCHUFATE - Control Energético Grupo Cenoa.*
+
+---
+
+## Actualizacion de logica de puntaje
+
+Agrega al formulario la pregunta obligatoria `Tipo de Control`, con estas opciones:
+
+- `Puntuable - Apertura`: control hasta una hora antes del ingreso del personal.
+- `Puntuable - Cierre`: control cuando el personal ya se retiro.
+- `Observacion`: control durante el horario operativo; se registra en la bitacora y no afecta el puntaje.
+
+Cada area comienza el periodo en 10/10 (100%). Si existe al menos un desvio en un control puntuable, queda en 9/10 (90%) durante ese periodo. La cantidad de desvios no genera descuentos adicionales.

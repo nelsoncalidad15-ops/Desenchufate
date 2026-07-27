@@ -50,8 +50,12 @@ export const RecentDeviationsLog: React.FC<RecentDeviationsLogProps> = ({
                   <h4 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
                     {reg.areaNombre}
                   </h4>
-                  <span className="px-2 py-0.5 rounded bg-rose-50 text-rose-800 border border-rose-200 font-mono text-xs font-bold flex-shrink-0">
-                    -{reg.puntosDescontados} pt
+                  <span className={`px-2 py-0.5 rounded border font-mono text-xs font-bold flex-shrink-0 ${
+                    reg.tipoControl === 'Observacion'
+                      ? 'bg-slate-50 text-slate-700 border-slate-200'
+                      : 'bg-rose-50 text-rose-800 border-rose-200'
+                  }`}>
+                    {reg.tipoControl === 'Observacion' ? 'Observacion' : 'Puntuable'}
                   </span>
                 </div>
 

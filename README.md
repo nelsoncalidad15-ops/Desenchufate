@@ -1,6 +1,6 @@
 # DESENCHUFATE
 
-Dashboard de control energetico para Grupo Cenoa. Cada area activa empieza el mes con 100 puntos. Los desvios descuentan puntos y el puntaje de cada concesionario o sede es el promedio simple de sus areas activas. Asi se comparan de forma justa aunque tengan diferente cantidad de areas.
+Dashboard de control energetico para Grupo Cenoa. Cada area empieza el periodo con 10/10 (100%). Un desvio en un control puntuable deja al area en 9/10 (90%); los hallazgos adicionales y las observaciones no siguen descontando puntos. El puntaje de cada sede es el promedio de sus areas activas.
 
 ## Trabajo local
 
@@ -31,8 +31,9 @@ Ejemplo de `AREAS`: `AR001 | EMP001 | Taller | Si | 1`.
 
 Ejemplo de `TIPOS_DESVIO`: `DES001 | Luz encendida sin necesidad | 1 | lightbulb | Si | 1`.
 
-En `CONFIG` carga al menos: `PUNTAJE_INICIAL = 100`, `LIMITE_EXCELENTE = 95`, `LIMITE_BUENO = 85` y `LIMITE_ALERTA = 70`.
+En `CONFIG` carga al menos: `PUNTAJE_INICIAL = 10`, `LIMITE_EXCELENTE = 10`, `LIMITE_BUENO = 9` y `LIMITE_ALERTA = 8`.
 
+La columna `PUNTOS_DESCUENTO` se mantiene solo por compatibilidad: ya no participa en el calculo del puntaje.
 ## Formulario y Apps Script
 
 Las preguntas del Google Form deben llamarse exactamente:
@@ -41,6 +42,7 @@ Las preguntas del Google Form deben llamarse exactamente:
 - `Sede / Sucursal`
 - `Area Auditada`
 - `Tipo de Desvio Detectado`
+- `Tipo de Control` (Puntuable - Apertura, Puntuable - Cierre u Observacion)
 - `Observaciones / Comentarios`
 - `Fotografia de Evidencia`
 
@@ -49,7 +51,7 @@ La hoja de respuestas debe llamarse `Respuestas de formulario 1`.
 1. En el Sheet abre `Extensiones > Apps Script`.
 2. Pega [Code.gs](apps-script/Code.gs).
 3. En `FORM_ID`, pega el identificador que aparece en la URL del Form, entre `/d/` y `/edit`.
-4. Ejecuta una vez `actualizarOpcionesFormulario` y acepta los permisos. Las listas del Form se cargaran desde `EMPRESAS`, `AREAS` y `TIPOS_DESVIO`.
+4. Ejecuta una vez `actualizarOpcionesFormulario` y acepta los permisos. Las listas del Form se cargaran desde `EMPRESAS`, `AREAS` y `TIPOS_DESVIO`; tambien se creara o actualizara `Tipo de Control`.
 5. Cada vez que modifiques esos catalogos, vuelve a ejecutar esa funcion. Mas adelante podemos automatizarlo con un disparador.
 6. Publica `doGet` como `Implementar > Nueva implementacion > Aplicacion web`, con acceso `Cualquier persona`.
 

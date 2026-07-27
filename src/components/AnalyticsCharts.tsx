@@ -10,6 +10,7 @@ import {
   LineChart,
   Line,
   Cell,
+  LabelList,
 } from 'recharts';
 import { BarChart3, TrendingUp, Zap, AlertCircle } from 'lucide-react';
 import {
@@ -53,7 +54,7 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
     .sort((a, b) => b.puntaje - a.puntaje)
     .map((e) => ({
       name: `${e.nombre} (${e.sede})`,
-      puntaje: Number(e.puntaje.toFixed(1)),
+      puntaje: Number(e.porcentaje.toFixed(1)),
       desvios: e.desviosCount,
       estado: e.estado,
     }));
@@ -112,7 +113,7 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
 
           <div className="h-52 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <ReBarChart data={companyChartData} margin={{ top: 10, right: 10, left: -25, bottom: 20 }}>
+              <ReBarChart data={companyChartData} margin={{ top: 24, right: 10, left: -25, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="2 2" stroke="#e2e8f0" vertical={false} />
                 <XAxis dataKey="name" stroke="#64748b" fontSize={10} tickLine={false} axisLine={{ stroke: '#cbd5e1' }} interval={0} angle={-10} textAnchor="end" />
                 <YAxis domain={[60, 100]} stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
@@ -121,6 +122,7 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
                   {companyChartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={getBarColor(entry.puntaje)} />
                   ))}
+                  <LabelList dataKey="puntaje" position="top" formatter={(value) => `${value}%`} fill="#0F172A" fontSize={11} fontWeight={700} />
                 </Bar>
               </ReBarChart>
             </ResponsiveContainer>
@@ -139,12 +141,14 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
 
           <div className="h-52 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <ReBarChart layout="vertical" data={desviosChartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+              <ReBarChart layout="vertical" data={desviosChartData} margin={{ top: 5, right: 45, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="2 2" stroke="#e2e8f0" horizontal={false} />
                 <XAxis type="number" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
                 <YAxis dataKey="tipo" type="category" stroke="#475569" fontSize={10} tickLine={false} axisLine={false} width={110} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="cantidad" fill="#334155" radius={[0, 4, 4, 0]} barSize={16} name="Casos" />
+                <Bar dataKey="cantidad" fill="#334155" radius={[0, 4, 4, 0]} barSize={16} name="Casos">
+                  <LabelList dataKey="cantidad" position="right" fill="#0F172A" fontSize={11} fontWeight={700} />
+                </Bar>
               </ReBarChart>
             </ResponsiveContainer>
           </div>
@@ -175,12 +179,14 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
 
           <div className="h-52 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trendChartData} margin={{ top: 10, right: 20, left: -25, bottom: 5 }}>
+              <LineChart data={trendChartData} margin={{ top: 24, right: 20, left: -25, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="2 2" stroke="#e2e8f0" vertical={false} />
                 <XAxis dataKey="label" stroke="#64748b" fontSize={10} tickLine={false} axisLine={{ stroke: '#cbd5e1' }} />
                 <YAxis domain={[70, 100]} stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Line type="monotone" dataKey={selectedCompanyTrend} stroke="#0F172A" strokeWidth={2} dot={{ r: 3.5, fill: '#0F172A' }} activeDot={{ r: 5, fill: '#047857' }} />
+                <Line type="monotone" dataKey={selectedCompanyTrend} stroke="#0F172A" strokeWidth={2} dot={{ r: 3.5, fill: '#0F172A' }} activeDot={{ r: 5, fill: '#047857' }}>
+                  <LabelList dataKey={selectedCompanyTrend} position="top" formatter={(value) => `${value}%`} fill="#0F172A" fontSize={10} fontWeight={700} />
+                </Line>
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -198,12 +204,14 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
 
           <div className="h-52 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <ReBarChart data={problemAreasData} margin={{ top: 10, right: 10, left: -25, bottom: 20 }}>
+              <ReBarChart data={problemAreasData} margin={{ top: 24, right: 10, left: -25, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="2 2" stroke="#e2e8f0" vertical={false} />
                 <XAxis dataKey="shortName" stroke="#64748b" fontSize={10} tickLine={false} axisLine={{ stroke: '#cbd5e1' }} interval={0} angle={-10} textAnchor="end" />
                 <YAxis stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="desvios" fill="#991B1B" radius={[4, 4, 0, 0]} barSize={28} name="Desvios" />
+                <Bar dataKey="desvios" fill="#991B1B" radius={[4, 4, 0, 0]} barSize={28} name="Desvios">
+                  <LabelList dataKey="desvios" position="top" fill="#7F1D1D" fontSize={11} fontWeight={700} />
+                </Bar>
               </ReBarChart>
             </ResponsiveContainer>
           </div>

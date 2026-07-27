@@ -52,7 +52,7 @@ export const CompanyGrid: React.FC<CompanyGridProps> = ({
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {empresas.map((emp, idx) => {
-          const scoreBadgeClass = getCompanyScoreBadge(emp.puntaje);
+          const scoreBadgeClass = getCompanyScoreBadge(emp.porcentaje);
           const theme = getBrandTheme(emp.nombre);
           return (
             <motion.div
@@ -86,7 +86,7 @@ export const CompanyGrid: React.FC<CompanyGridProps> = ({
                       #{emp.posicion}
                     </span>
                     <span className={`rounded px-2 py-0.5 text-xs font-mono ${scoreBadgeClass}`} style={{ backgroundColor: theme.accent }}>
-                      {emp.puntaje.toFixed(1)}
+                      {emp.porcentaje.toFixed(1)}%
                     </span>
                   </div>
                 </div>
@@ -106,7 +106,7 @@ export const CompanyGrid: React.FC<CompanyGridProps> = ({
                           className={`flex cursor-pointer items-center gap-1 rounded border px-2 py-0.5 text-[11px] font-medium transition-all ${style}`}
                         >
                           <span className="max-w-[120px] truncate">{area.areaNombre}</span>
-                          <span className="font-mono text-[10px] font-bold">{area.puntaje}</span>
+                          <span className="font-mono text-[10px] font-bold">{area.porcentaje.toFixed(0)}%</span>
                         </button>
                       );
                     })}
