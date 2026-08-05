@@ -35,12 +35,12 @@ import { AreaHeatmap } from './components/AreaHeatmap';
 import { AnalyticsCharts } from './components/AnalyticsCharts';
 import { RecentDeviationsLog } from './components/RecentDeviationsLog';
 import { DeviationDetailModal } from './components/DeviationDetailModal';
+import { getCurrentPeriod } from './utils/period';
 
 type MainTab = 'empresas' | 'areas' | 'graficos' | 'bitacora';
 
 const DEFAULT_FILTERS: FiltrosState = {
-  mes: 'Julio',
-  anio: '2026',
+  ...getCurrentPeriod(),
   empresa: 'Todas',
   sede: 'Todas',
   area: 'Todas',

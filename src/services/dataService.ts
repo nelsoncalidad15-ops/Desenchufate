@@ -21,6 +21,7 @@ import {
   INITIAL_TIPOS_DESVIO,
   INITIAL_REGISTROS,
 } from '../data/mockSheetData';
+import { getCurrentPeriod, MONTHS } from '../utils/period';
 
 // Helper to determine score state
 export function getEstadoPuntaje(score: number, config: ConfigSheet): EstadoPuntaje {
@@ -38,8 +39,7 @@ export function calculateDashboardData(
   tiposDesvioRaw: TipoDesvioSheet[] = INITIAL_TIPOS_DESVIO,
   registrosRaw: RegistroDesvio[] = INITIAL_REGISTROS,
   filtros: FiltrosState = {
-    mes: 'Julio',
-    anio: '2026',
+    ...getCurrentPeriod(),
     empresa: 'Todas',
     sede: 'Todas',
     area: 'Todas',
@@ -73,18 +73,15 @@ export function calculateDashboardData(
   });
 
   // Previous month filter for MoM comparison calculation
-  const mesAnteriorMap: Record<string, string> = {
-    'Julio': 'Junio',
-    'Junio': 'Mayo',
-    'Mayo': 'Abril',
-    'Abril': 'Marzo',
-    'Marzo': 'Febrero',
-    'Febrero': 'Enero',
-  };
-  const mesAnteriorName = filtros.mes !== 'Todos' ? (mesAnteriorMap[filtros.mes] || 'Junio') : 'Junio';
+  const currentPeriod = getCurrentPeriod();
+  const selectedMonthIndex = filtros.mes !== 'Todos' ? MONTHS.indexOf(filtros.mes) : MONTHS.indexOf(currentPeriod.mes);
+  const selectedYear = filtros.anio !== 'Todos' ? Number(filtros.anio) : Number(currentPeriod.anio);
+  const previousPeriod = new Date(selectedYear, selectedMonthIndex - 1, 1);
+  const mesAnteriorName = MONTHS[previousPeriod.getMonth()] || 'Enero';
+  const anioMesAnterior = previousPeriod.getFullYear();
   const registrosMesAnterior = registrosRaw.filter((reg) => {
     if (reg.mes.toLowerCase() !== mesAnteriorName.toLowerCase()) return false;
-    if (filtros.anio !== 'Todos' && String(reg.anio) !== filtros.anio) return false;
+    if (filtros.anio !== 'Todos' && reg.anio !== anioMesAnterior) return false;
     if (filtros.empresa !== 'Todas' && reg.idEmpresa !== filtros.empresa) return false;
     if (filtros.sede !== 'Todas' && reg.sede.toLowerCase() !== filtros.sede.toLowerCase()) return false;
     return true;
@@ -299,14 +296,10 @@ export function calculateDashboardData(
   const areasConMasDesvios = [...sortedByDesviosArea].slice(0, 8);
 
   // 8. Monthly score evolution (last 6 months)
-  const mesesOrden: { mes: string; anio: number }[] = [
-    { mes: 'Febrero', anio: 2026 },
-    { mes: 'Marzo', anio: 2026 },
-    { mes: 'Abril', anio: 2026 },
-    { mes: 'Mayo', anio: 2026 },
-    { mes: 'Junio', anio: 2026 },
-    { mes: 'Julio', anio: 2026 },
-  ];
+  const mesesOrden: { mes: string; anio: number }[] = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(selectedYear, selectedMonthIndex - (5 - index), 1);
+    return { mes: MONTHS[date.getMonth()] || 'Enero', anio: date.getFullYear() };
+  });
 
   const evolucionMensual: EvolucionMensualData[] = mesesOrden.map(({ mes, anio }) => {
     const regsMes = registrosRaw.filter((r) => r.mes.toLowerCase() === mes.toLowerCase() && r.anio === anio);
@@ -340,8 +333,11 @@ export function calculateDashboardData(
   });
 
   // 9. Available filter choices
-  const mesesDisponibles = ['Todos', 'Julio', 'Junio', 'Mayo', 'Abril', 'Marzo', 'Febrero'];
-  const aniosDisponibles = ['2026', 'Todos'];
+  const mesesDisponibles = ['Todos', ...[...MONTHS].reverse()];
+  const aniosDisponibles = [
+    ...new Set([currentPeriod.anio, ...registrosRaw.map((registro) => String(registro.anio))]),
+  ].sort((a, b) => Number(b) - Number(a));
+  aniosDisponibles.push('Todos');
   const sedesDisponibles = ['Todas', 'Jujuy', 'Salta'];
   const empresasListFiltro = activeEmpresasRaw.map((e) => ({
     id: e.id,

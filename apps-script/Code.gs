@@ -83,7 +83,7 @@ function readRegistros(ss, empresas, areas, tiposDesvio) {
     return '';
   };
   return values.slice(1).map(function(row, index) {
-    const timestamp = String(get(row, ['Timestamp', 'Marca temporal', 'Fecha y hora']) || '').trim();
+    const timestamp = toIsoTimestamp(get(row, ['Timestamp', 'Marca temporal', 'Fecha y hora']));
     const empresaName = String(get(row, ['Empresa / Marca', 'Empresa', 'Marca']) || '').trim();
     const sede = String(get(row, ['Sede / Sucursal', 'Sede', 'Sucursal']) || '').trim();
     const areaValue = String(get(row, ['Area Auditada', 'Área Auditada', 'Area', 'Área']) || '').trim();
@@ -99,6 +99,12 @@ function readRegistros(ss, empresas, areas, tiposDesvio) {
   }).filter(function(item) { return item; });
 }
 
+function toIsoTimestamp(value) {
+  if (Object.prototype.toString.call(value) === '[object Date]' && !isNaN(value.getTime())) {
+    return value.toISOString();
+  }
+  return String(value || '').trim();
+}
 function expandirRegistros(registros, tiposDesvio) {
   const finales = [];
   registros.forEach(function(registro) {

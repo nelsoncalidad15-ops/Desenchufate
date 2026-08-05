@@ -13,6 +13,7 @@ import {
   INITIAL_TIPOS_DESVIO,
   INITIAL_REGISTROS,
 } from '../data/mockSheetData';
+import { MONTHS } from '../utils/period';
 
 export interface DashboardSourceData {
   config: ConfigSheet;
@@ -49,7 +50,6 @@ interface CachedLivePayload {
   cachedAt: string;
 }
 
-const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const LIVE_CACHE_KEY = 'desenchufate-live-cache-v2';
 
 function cloneDefaults(): DashboardSourceData {
@@ -113,7 +113,14 @@ function slugify(value: string): string {
 
 function parseTimestamp(value?: string): Date | null {
   if (!value) return null;
-  const parsed = new Date(value.replace(' ', 'T'));
+  const normalized = value.trim();
+  const latinDateMatch = normalized.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ ,]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if (latinDateMatch) {
+    const [, day, month, year, hour = '0', minute = '0', second = '0'] = latinDateMatch;
+    const parsedLatinDate = new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second));
+    if (!Number.isNaN(parsedLatinDate.getTime())) return parsedLatinDate;
+  }
+  const parsed = new Date(normalized);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
