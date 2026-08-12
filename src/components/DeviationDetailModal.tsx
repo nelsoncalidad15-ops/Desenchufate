@@ -75,10 +75,10 @@ export const DeviationDetailModal: React.FC<DeviationDetailModalProps> = ({
 
           <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
             <span className="text-slate-500 font-bold flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5 text-amber-600" /> Fecha & Hora
+              <Calendar className="w-3.5 h-3.5 text-amber-600" /> Auditoría
             </span>
             <span className="text-sm font-black text-slate-900 font-mono block">
-              {registro.fecha} ({registro.timestamp.split(' ')[1] || '08:30'})
+              {registro.fecha} · Turno {registro.turno || 'Mañana'}
             </span>
           </div>
 

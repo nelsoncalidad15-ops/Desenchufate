@@ -39,6 +39,8 @@ export interface RegistroDesvio {
   id: string;
   timestamp: string;
   fecha: string;
+  turno?: 'Mañana' | 'Tarde';
+  auditoriaId?: string;
   mes: string;
   anio: number;
   idEmpresa: string;

@@ -36,7 +36,7 @@ interface AppsScriptTipo { id: string; tipo: string; icono?: string; activo?: bo
 interface AppsScriptRegistro {
   id?: string; timestamp?: string; empresa?: string; sede?: string; area?: string;
   idEmpresa?: string; idArea?: string; tipoDesvio?: string; puntosDescontados?: number;
-  tipoControl?: string;
+  tipoControl?: string; turno?: 'Mañana' | 'Tarde'; auditoriaId?: string;
   observaciones?: string; fotoUrl?: string;
 }
 interface AppsScriptPayload {
@@ -174,10 +174,12 @@ function buildDataFromAppsScript(payload: AppsScriptPayload): DashboardSourceDat
     const empresaNombre = empresa?.nombre || item.empresa?.trim() || 'Sin empresa';
     const sede = empresa?.sede || item.sede?.trim() || 'Sin sede';
     const areaNombre = area?.nombre || item.area?.trim() || 'Sin area';
+    const turno = item.turno || (parsedDate.getHours() < 14 ? 'Mañana' : 'Tarde');
+    const idArea = area?.id || `AR-${slugify(`${empresaNombre}-${sede}-${areaNombre}`)}`;
     return {
       id: item.id?.trim() || `REG-${index + 1}`, timestamp: item.timestamp?.trim() || parsedDate.toISOString(), fecha: parsedDate.toISOString().slice(0, 10),
       mes: getMonthName(parsedDate), anio: parsedDate.getFullYear(), idEmpresa: empresa?.id || `EMP-${slugify(`${empresaNombre}-${sede}`)}`,
-      empresaNombre, sede, idArea: area?.id || `AR-${slugify(`${empresaNombre}-${sede}-${areaNombre}`)}`, areaNombre,
+      empresaNombre, sede, idArea, areaNombre, turno, auditoriaId: item.auditoriaId || `AUD-${parsedDate.toISOString().slice(0, 10)}-${turno === 'Mañana' ? 'MANANA' : 'TARDE'}-${idArea}`,
       tipoControl: normalizarTipoControl(item.tipoControl),
       tipoDesvio: item.tipoDesvio?.trim() || 'Otro desvio energetico', cantidadDesvios: 1, puntosDescontados: Number(item.puntosDescontados) || 1,
       observacion: item.observaciones?.trim() || '', fotoUrl: item.fotoUrl?.trim() || '', mostrarFoto: item.fotoUrl ? 'Si' : 'No',

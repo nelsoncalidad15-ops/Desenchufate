@@ -48,6 +48,8 @@ Las preguntas del Google Form deben llamarse exactamente:
 
 La hoja de respuestas debe llamarse `Respuestas de formulario 1`.
 
+No hace falta agregar un campo de turno al Form: cada envío conserva su fecha y hora. El sistema toma como una misma auditoría los desvíos de una misma área, en la misma fecha y turno: **Mañana** antes de las 14:00 y **Tarde** desde las 14:00. Por eso, durante una recorrida se carga un envío por cada desvío detectado.
+
 1. En el Sheet abre `Extensiones > Apps Script`.
 2. Pega [Code.gs](apps-script/Code.gs).
 3. En `FORM_ID`, pega el identificador que aparece en la URL del Form, entre `/d/` y `/edit`.

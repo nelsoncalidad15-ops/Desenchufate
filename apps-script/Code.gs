@@ -93,10 +93,22 @@ function readRegistros(ss, empresas, areas, tiposDesvio) {
     const area = areas.find(function(item) { return item.idEmpresa === (empresa && empresa.id) && (item.nombre.toLowerCase() === areaValue.toLowerCase() || areaLabel(item, empresas) === areaValue); });
     const tipoInfo = tiposDesvio.find(function(item) { return item.tipo.toLowerCase() === tipo.toLowerCase(); });
     if (!timestamp) return null;
+    const auditoria = clasificarAuditoria(timestamp, area ? area.id : 'SIN-AREA');
     return { id: 'REG-' + (index + 1), timestamp: timestamp, empresa: empresa ? empresa.nombre : empresaName, sede: empresa ? empresa.sede : sede,
       area: area ? area.nombre : areaValue, idEmpresa: empresa ? empresa.id : '', idArea: area ? area.id : '', tipoControl: tipoControl || 'Puntuable - Cierre', tipoDesvio: tipo,
-      puntosDescontados: tipoInfo ? tipoInfo.puntosDescuento : 1, observaciones: String(get(row, ['Observaciones / Comentarios', 'Observaciones', 'Comentarios']) || ''), fotoUrl: String(get(row, ['Fotografia de Evidencia', 'Fotografía de Evidencia', 'Foto']) || '') };
+      turno: auditoria.turno, auditoriaId: auditoria.id, puntosDescontados: tipoInfo ? tipoInfo.puntosDescuento : 1, observaciones: String(get(row, ['Observaciones / Comentarios', 'Observaciones', 'Comentarios']) || ''), fotoUrl: String(get(row, ['Fotografia de Evidencia', 'Fotografía de Evidencia', 'Foto']) || '') };
   }).filter(function(item) { return item; });
+}
+
+// Una auditoría agrupa los desvíos de una misma área, fecha y turno.
+// Mañana: antes de las 14:00. Tarde: desde las 14:00.
+function clasificarAuditoria(timestamp, idArea) {
+  const date = new Date(timestamp);
+  const timezone = Session.getScriptTimeZone();
+  const fecha = Utilities.formatDate(date, timezone, 'yyyy-MM-dd');
+  const hora = Number(Utilities.formatDate(date, timezone, 'H'));
+  const turno = hora < 14 ? 'Mañana' : 'Tarde';
+  return { turno: turno, id: 'AUD-' + fecha + '-' + (hora < 14 ? 'MANANA' : 'TARDE') + '-' + idArea };
 }
 
 function toIsoTimestamp(value) {
@@ -113,7 +125,7 @@ function expandirRegistros(registros, tiposDesvio) {
       const tipoInfo = tiposDesvio.find(function(item) { return item.tipo.toLowerCase() === tipo.toLowerCase(); });
       finales.push({ id: registro.id + '-' + (index + 1), timestamp: registro.timestamp, empresa: registro.empresa, sede: registro.sede,
         area: registro.area, idEmpresa: registro.idEmpresa, idArea: registro.idArea, tipoControl: registro.tipoControl, tipoDesvio: tipo,
-        puntosDescontados: tipoInfo ? tipoInfo.puntosDescuento : 1, observaciones: registro.observaciones, fotoUrl: registro.fotoUrl });
+        turno: registro.turno, auditoriaId: registro.auditoriaId, puntosDescontados: tipoInfo ? tipoInfo.puntosDescuento : 1, observaciones: registro.observaciones, fotoUrl: registro.fotoUrl });
     });
   });
   return finales;
