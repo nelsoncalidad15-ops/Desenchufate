@@ -36,6 +36,7 @@ import { AnalyticsCharts } from './components/AnalyticsCharts';
 import { RecentDeviationsLog } from './components/RecentDeviationsLog';
 import { DeviationDetailModal } from './components/DeviationDetailModal';
 import { getCurrentPeriod } from './utils/period';
+import { ExecutiveReport } from './components/ExecutiveReport';
 
 type MainTab = 'empresas' | 'areas' | 'graficos' | 'bitacora';
 
@@ -65,6 +66,7 @@ export default function App() {
     new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   );
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showExecutiveReport, setShowExecutiveReport] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -179,6 +181,7 @@ export default function App() {
         onRefresh={handleRefresh}
         activeFilterCount={activeFilterCount}
         onToggleFilterBar={() => setShowFilterBar((prev) => !prev)}
+        onOpenExecutiveReport={() => setShowExecutiveReport(true)}
       />
 
       <main className="max-w-7xl mx-auto w-full flex-1 px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
@@ -366,6 +369,15 @@ export default function App() {
         registro={selectedRegistro}
         onClose={() => setSelectedRegistro(null)}
       />
+
+      {showExecutiveReport && (
+        <ExecutiveReport
+          dashboard={dashboardData}
+          filtros={filtros}
+          generatedAt={new Date()}
+          onClose={() => setShowExecutiveReport(false)}
+        />
+      )}
     </div>
   );
 }

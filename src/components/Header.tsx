@@ -5,6 +5,7 @@ import {
   Filter,
   Calendar,
   CheckCircle2,
+  FileText,
 } from 'lucide-react';
 import { ConfigSheet } from '../types';
 
@@ -16,6 +17,7 @@ interface HeaderProps {
   onRefresh: () => void;
   activeFilterCount: number;
   onToggleFilterBar: () => void;
+  onOpenExecutiveReport: () => void;
   onOpenAppsScriptModal?: () => void;
   onOpenConfigModal?: () => void;
 }
@@ -27,6 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
   onRefresh,
   activeFilterCount,
   onToggleFilterBar,
+  onOpenExecutiveReport,
 }) => {
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(248,250,252,0.96)_100%)] px-4 py-3 backdrop-blur-md sm:px-6 lg:px-8">
@@ -81,6 +84,15 @@ export const Header: React.FC<HeaderProps> = ({
                 {activeFilterCount}
               </span>
             )}
+          </button>
+
+          <button
+            onClick={onOpenExecutiveReport}
+            className="flex cursor-pointer items-center gap-1.5 rounded-2xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-slate-700"
+            title="Generar informe ejecutivo"
+          >
+            <FileText className="h-3.5 w-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">Informe</span>
           </button>
         </div>
       </div>

@@ -1,1 +1,33 @@
 @import "tailwindcss";
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  #executive-report,
+  #executive-report * {
+    visibility: visible;
+  }
+
+  #executive-report-overlay {
+    position: static !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  #executive-report {
+    position: static !important;
+    width: 100% !important;
+  }
+
+  @page {
+    margin: 12mm;
+    size: A4;
+  }
+}
