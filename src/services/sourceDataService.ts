@@ -50,7 +50,7 @@ interface CachedLivePayload {
   cachedAt: string;
 }
 
-const LIVE_CACHE_KEY = 'desenchufate-live-cache-v2';
+const LIVE_CACHE_KEY = 'desenchufate-live-cache-v3';
 
 function cloneDefaults(): DashboardSourceData {
   return {
@@ -111,6 +111,13 @@ function slugify(value: string): string {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
+// El ID de área debe ser único en todo el tablero. Se conserva el ID original
+// de la planilla, pero se lo combina con su empresa para tolerar temporalmente
+// planillas históricas con IDs repetidos entre sedes.
+function areaKey(idEmpresa: string, idArea: string): string {
+  return `${idEmpresa}::${idArea}`;
+}
+
 function parseTimestamp(value?: string): Date | null {
   if (!value) return null;
   const normalized = value.trim();
@@ -155,7 +162,7 @@ function buildDataFromAppsScript(payload: AppsScriptPayload): DashboardSourceDat
     id: empresa.id, nombre: empresa.nombre.trim(), sede: empresa.sede.trim(), activa: empresa.activa !== false, orden: empresa.orden || index + 1,
   })).filter((empresa) => empresa.id && empresa.nombre);
   const areas = (payload.areas || []).map((area, index) => ({
-    id: area.id, idEmpresa: area.idEmpresa, nombre: area.nombre.trim(), activa: area.activa !== false, orden: area.orden || index + 1,
+    id: areaKey(area.idEmpresa.trim(), area.id.trim()), idEmpresa: area.idEmpresa.trim(), nombre: area.nombre.trim(), activa: area.activa !== false, orden: area.orden || index + 1,
   })).filter((area) => area.id && area.idEmpresa && area.nombre);
   const tiposDesvio = (payload.tiposDesvio || []).map((tipo, index) => ({
     id: tipo.id, tipo: tipo.tipo.trim(), icono: tipo.icono || 'alert-triangle', activo: tipo.activo !== false, orden: tipo.orden || index + 1,
@@ -168,14 +175,17 @@ function buildDataFromAppsScript(payload: AppsScriptPayload): DashboardSourceDat
   const registros = (payload.registros || []).map((item, index) => {
     const empresa = empresasFinales.find((candidate) => candidate.id === item.idEmpresa)
       || empresasFinales.find((candidate) => candidate.nombre.toLowerCase() === item.empresa?.trim().toLowerCase() && candidate.sede.toLowerCase() === item.sede?.trim().toLowerCase());
-    const area = areasFinales.find((candidate) => candidate.id === item.idArea)
+    const area = empresa && item.idArea
+      ? areasFinales.find((candidate) => candidate.id === areaKey(empresa.id, item.idArea.trim()))
+      : undefined;
+    const areaByName = area
       || areasFinales.find((candidate) => candidate.idEmpresa === empresa?.id && candidate.nombre.toLowerCase() === item.area?.trim().toLowerCase());
     const parsedDate = parseTimestamp(item.timestamp) || new Date();
     const empresaNombre = empresa?.nombre || item.empresa?.trim() || 'Sin empresa';
     const sede = empresa?.sede || item.sede?.trim() || 'Sin sede';
-    const areaNombre = area?.nombre || item.area?.trim() || 'Sin area';
+    const areaNombre = areaByName?.nombre || item.area?.trim() || 'Sin area';
     const turno = item.turno || (parsedDate.getHours() < 14 ? 'Mañana' : 'Tarde');
-    const idArea = area?.id || `AR-${slugify(`${empresaNombre}-${sede}-${areaNombre}`)}`;
+    const idArea = areaByName?.id || `AR-${slugify(`${empresaNombre}-${sede}-${areaNombre}`)}`;
     return {
       id: item.id?.trim() || `REG-${index + 1}`, timestamp: item.timestamp?.trim() || parsedDate.toISOString(), fecha: parsedDate.toISOString().slice(0, 10),
       mes: getMonthName(parsedDate), anio: parsedDate.getFullYear(), idEmpresa: empresa?.id || `EMP-${slugify(`${empresaNombre}-${sede}`)}`,
